@@ -14,6 +14,18 @@ Rane is a chat client aimed to solve the issue of _______ _________ chat client 
 
   `python create_database`
 
+### Change utils/rss.py IP connection
+
+   `rss_socket.connect("http://192.
+    168.1.10:5001/")`
+
+   to
+
+   `
+   `rss_socket.connect("http://YOUR_IP_HOST_AND_PORT/")`
+
+    
+
 ### Run Server [/]
   `python run.py`
 
