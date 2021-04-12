@@ -9,7 +9,7 @@ loop = asyncio.get_event_loop()
 def connect():
     try:
         if not rss_socket.connected:
-            rss_socket.connect("http://127.0.0.1:5001/")
+            rss_socket.connect("http://192.168.1.10:5001/")
             rss_socket.sleep(2)
         return True
     except Exception as e:
