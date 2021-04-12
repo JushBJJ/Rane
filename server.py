@@ -48,22 +48,21 @@ def message_sent(data):
 
 
 @ app.route("/")
-def main():
+def root():
     if gateway() == True:
         app.logger.info(f"{request.remote_addr} connected to enter the server.")
         return render_template("banned.html")
 
-    if "anything" not in session:
-        session["anything"] = ""
-        session["loginError"] = ""
-        session["registerError"] = ""
-        session["username"] = ""
-        session["chat"] = ""
-        session["room_id"] = 0
+    session["anything"] = ""
+    session["login_error"] = ""
+    session["register_error"] = ""
+    session["username"] = ""
+    session["chat"] = ""
+    session["room_id"] = 0
 
     return render_template("login.html",
-                           loginError=session["loginError"],
-                           registerError=session["registerError"])
+                           login_error=session["login_error"],
+                           register_error=session["register_error"])
 
 
 @rss.rss_socket.on("connect")
@@ -98,8 +97,8 @@ def connected(data):
         return
     elif "anything" not in session:
         session["anything"] = ""
-        session["loginError"] = ""
-        session["registerError"] = ""
+        session["login_error"] = ""
+        session["register_error"] = ""
         session["username"] = ""
         session["chat"] = ""
         session["room_id"] = ""
@@ -272,40 +271,57 @@ def login():
         chat_utils.autocolor()
         return redirect("/room/0")
 
-    session["loginError"] = "Invalid Username or Password"
+    session["login_error"] = "Invalid Username or Password"
     return redirect("/")
 
 
 @ app.route("/register", methods=["POST"])
 def register():
-    if gateway():
-        return render_template("banned.html")
-
     username = request.form["register-username"]
     password = hashlib.sha256(request.form["register-password"].encode()).hexdigest()
-    check_password = hashlib.sha256(request.form["register-password-again"].encode()).hexdigest()
+    confirm_password = hashlib.sha256(request.form["register-password-again"].encode()).hexdigest()
+    ip = request.remote_addr
 
-    f = open("./info/accounts.json", "a+")
-    f.seek(0)
-    accounts = json.load(f)
-
-    if username in accounts:
-        session["registerError"] = "Username already exists."
-        f.close()
-        return redirect("/")
-    elif password != check_password:
-        session["registerError"] = "Password did not match, please try again."
-        f.close()
+    if not password == confirm_password:
+        session["register_error"] = "Password and confirmation password do not match."
         return redirect("/")
 
-    accounts[username] = {"password": password, "ip": request.environ.get("REMOTE_ADDR")}
-    app.logger.info(f"[{accounts[username]['ip']}]: Created account {username}.")
+    data = {
+        "filename": "accounts",
+        "folder": "server",
+        "table": "accounts",
+        "select": "username",
+        "where": f"username=\"{username}\""
+    }
 
-    user_utils.online(1, 0)
+    # Check
+    ret = utils.repeat(
+        event="retrieve table",
+        data=data,
+        return_type=list
+    )
 
-    session["username"] = username
-    chat_utils.autocolor()
-    return redirect("/room/0")
+    if not ret:
+        utils.repeat(
+            event="append table",
+            data={
+                "filename": "accounts",
+                "folder": "server",
+                "table": "accounts",
+                "columns": "username, password, ip",
+                "values": f"\"{username}\", \"{password}\", \"{ip}\"",
+                "unique": False
+            },
+            return_type=bool
+        )
+        session["username"] = username
+
+        user_utils.online(1, 0)
+        chat_utils.autocolor()
+        return redirect("/room/0")
+
+    session["register_error"] = "Username already taken."
+    return redirect("/")
 
 
 @ app.route("/room/<room_id>")
@@ -389,15 +405,20 @@ def disconnect():
     rss.disconnect()
 
 
-if __name__ == "__main__":
+def main():
     rss.disconnect()
     rss.connect()
 
     atexit.register(disconnect)
     user_utils.clear_online()
-    print("Started server.")
+    print("STARTED WEBSITE SERVER")
 
-    client_socket.run(app, host=HOST, port=PORT, debug=app.config["DEBUG"], use_reloader=True)
+    print("PORT: ", app.config["PORT"])
+    client_socket.run(app, host=HOST, port=PORT, debug=False)
     print("Exiting Server...")
     client_socket.stop()
     rss.disconnect()
+
+
+if __name__ == "__main__":
+    main()
