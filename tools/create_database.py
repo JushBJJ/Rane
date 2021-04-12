@@ -2,7 +2,7 @@ import sqlite3
 import os
 import shutil
 
-path = "../data2/"
+path = "../data/"
 
 # Create data folder and subdirectories
 os.mkdir(path)
