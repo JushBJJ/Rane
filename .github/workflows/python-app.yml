@@ -44,4 +44,5 @@ jobs:
       run: |
         pytest
     - name: Kill server
+      run: \
         pkill -f run.py
