@@ -18,8 +18,13 @@ def create(config_filename):
     logging.basicConfig(filename="./logs/server.txt", level=logging.INFO)
 
     app = Flask(__name__)
-    app.config.from_pyfile(config_filename)
-    app.config.from_object("config.SERVER_Development_Home")
+
+    try:
+        app.config.from_pyfile(config_filename)
+        app.config.from_object("config.SERVER_Development_Home")
+    except FileNotFoundError:
+        app.config["HOST"] = "127.0.0.1"
+        app.config["PORT"] = "5000"
 
     api = Api(app)
     socketio = SocketIO(app, logger=True, always_connect=True)
