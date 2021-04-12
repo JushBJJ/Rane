@@ -1,0 +1,20 @@
+{
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "sqltools.connections": [
+        {},
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "RoomZero",
+            "database": "${workspaceFolder:Local-Chat-Client}/data/rooms/0.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true,
+    "pythonTestExplorer.testFramework": "pytest",
+    "python.autoComplete.addBrackets": true
+}
