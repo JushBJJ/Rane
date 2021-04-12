@@ -19,7 +19,7 @@ def create(config_filename):
 
     app = Flask(__name__)
     app.config.from_pyfile(config_filename)
-    app.config.from_object("config.Development_Home")
+    app.config.from_object("config.SERVER_Development_Home")
 
     api = Api(app)
     socketio = SocketIO(app, logger=True, always_connect=True)
