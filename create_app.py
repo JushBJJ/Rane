@@ -23,7 +23,7 @@ def create(config_filename):
         app.config.from_pyfile(config_filename)
         app.config.from_object("config.SERVER_Development_Home")
     except FileNotFoundError:
-        app.config["HOST"] = "127.0.0.1"
+        app.config["HOST"] = "0.0.0.0"
         app.config["PORT"] = "5000"
 
     api = Api(app)
