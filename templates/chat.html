@@ -1,0 +1,152 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>You're garbage chat.</title>
+
+    <!--<link rel="stylesheet" href={{ url_for('static', filename='styles.css') }}>
+    <link rel="stylesheet" href={{ url_for('static', filename='chatroom.css') }}>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.jpg') }}">-->
+
+    <!--IGNORE: For live preview-->
+    <link rel="stylesheet" href="../static/styles.css">
+    <link rel="stylesheet" href="../static/chatroom.css">
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.min.js"></script>
+    <!--<script src="https://kit.fontawesome.com/b44c4e81bc.js" crossorigin="anonymous"></script>-->
+</head>
+<body onload="ping(); ping_important(); ping_very_important();">
+    <!--Desktop View-->
+    <div id="side-panel">
+        <span id="username">{{username}}</span>
+        <div id="room_name"><span id="room_span_name">{{room_name}}</span>
+            {% if room_admin %}
+                <i class="fas fa-cog fa-xs"></i>
+            {% endif %}
+        </div>
+        <div id="chatrooms">Loading...</div>
+        <div id="side-bottom">
+            <p>Users Online: <span id="current-online">Loading...</span>
+            <b><span class="sidebar-add">+
+                <!-- Add room -->
+                <div id="add_room" class="box">
+                    <input id="room-name" class="rl-box" placeholder="Room Name" type="text">
+                    <br>
+                    <input id="room-desc"class="rl-box" placeholder="Room Description" type="text">
+                    <br>
+                    <select id="room-public" class="rl-box">
+                        <option value="Public">Public</option>
+                        <option value="Private">Private</option>
+                    </select>
+                    <br>
+                    <button id="room-create" class="submit rl-box">Create Room</button>
+                    <button id="room-close" class="submit rl-box">Cancel</button>
+                </div>
+            </span></b>
+            </p>
+        </div>
+    </div>
+    <div id="chat">
+        <div id="messages">Loading...</div>
+        <textarea id="send" placeholder="Message"></textarea>
+    </div>
+
+    <!--Loading Screen-->
+    <div id="loading-screen" class="load">Loading...</div>
+
+    <!--Mobile Menu View-->
+    <div id="mobile-menu-hamburger">&#9776</div>
+    <div id="mobile-menu"></div>
+
+    <!--Server Settings/Admin-->
+    {% if room_admin %}
+    <div id="settings">
+        <h1>Settings</h1>
+        <div id="blacklisted">
+            
+        </div>
+        <div id="whitelisted">
+            
+        </div>
+        
+        <div id="public">
+
+        </div>
+        <div id="admins">
+
+        </div>
+        <!--TOOD: Roles-->
+    </div>
+    {% endif %}
+    <!------------------->
+
+    <script type="text/javascript">
+        const socket=io();
+        let room_id="{{room_id}}";
+        let user_id="{{user_id}}";
+
+        let imp_3=true;
+        let imp_2=true;
+        let imp_1=true;
+        let hamburger_toggle=false
+
+        socket.connect("http://127.0.0.1:5000/");
+
+        $('#send').keyup(function(e){
+            if(e.keyCode == 13)
+            {
+                message=document.getElementById("send").value
+                socket.emit("send", message, room_id, user_id)
+                document.getElementById("send").value="";
+            }
+        });
+
+        $(".sidebar-add").on("click", function(event){
+            document.getElementById("add_room").style.visibility="visible";
+            document.getElementById("add_room").className="box box-open";
+        })
+
+        $("#room-create").on("click", function(event){
+            var roomTitle=document.getElementById("room-name").value;
+            var roomDesc=document.getElementById("room-desc").value;
+            var public=document.getElementById("room-public").value;
+
+            document.getElementById("room-desc").value=""
+            document.getElementById("room-name").value=""
+            document.getElementById("room-public").value="Public"
+            document.getElementById("add_room").className="box box-close";
+
+            socket.emit("create_room", 
+                {
+                    "name": roomTitle, 
+                    "desc": roomDesc,
+                    "public": public,
+                    "owner": "{{username}}"
+                }
+            )
+        })
+
+        $("#room-close").on("click", function(event){;
+            document.getElementById("add_room").className="box box-close";
+        })
+
+        $("#mobile-menu-hamburger").on("click", function(event){
+            element=document.getElementById("chatrooms");
+
+            if(hamburger_toggle==false){
+                element.className="chatrooms-open";
+                hamburger_toggle=true;
+            }else{
+                element.className="chatrooms-close";
+                hamburger_toggle=false;
+            }
+        })
+    </script>
+    <script type="text/javascript" src={{url_for('static', filename='autoUpdate.js')}}>
+
+    </script>
+</body>
+</html>
