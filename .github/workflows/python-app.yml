@@ -37,6 +37,7 @@ jobs:
         python create_database.py
         cd ../
         mkdir logs
+        ls
     - name: Run resource server and wait 20 seconds
       run: |
         python run.py&
