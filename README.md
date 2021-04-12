@@ -15,3 +15,15 @@ TODO
   
 ### Run Website Server (Terminal Tab 2) [repo-root/]
   `python server.py`
+
+## Roadmap
+- [ ] Fully Transition to SQL
+  - [ ] Register
+- [ ] Create python script to generate database.
+- [ ] Reorganize and comment repository code.
+  - [ ] Reorganizing Functions
+  - [ ] Function argument types defined
+  - [ ] Commenting/Documenting
+  - [ ] Removing unused imports
+- [ ] Database Logging
+- [ ] Encryption and security upgrades
