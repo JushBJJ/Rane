@@ -1,15 +1,15 @@
 from flask import Flask
 from flask_socketio import SocketIO
 
-
-import create_app
-import db_utils
+import resources.create_rss_app as create_app
+import resources.db_utils as db_utils
 import shutil
 
-create_app.create("config.py")
+create_app.create("resource_config.py")
 
 app = create_app.app
 socketio = create_app.socketio
+
 HOST = app.config["HOST"]
 PORT = app.config["PORT"]
 
@@ -263,5 +263,11 @@ def is_blacklisted(data):
     socketio.emit("check blacklisted", db_utils.db_edit(filename="blacklist", folder="server", function=check))
 
 
+def main():
+    print("STARTED RESOURCE SERVER")
+    print("RSS PORT: ", app.config["PORT"])
+    socketio.run(app, host=HOST, port=PORT, debug=False)
+
+
 if __name__ == "__main__":
-    socketio.run(app, host=HOST, port=PORT, debug=app.config["DEBUG"], use_reloader=True)
+    main()
