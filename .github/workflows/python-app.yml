@@ -36,6 +36,10 @@ jobs:
         cd ./tools/
         python create_database.py
         cd ../
+    - name: Run resource server and wait 20 seconds
+      run: |
+        python run.py&
+        sleep 20
     - name: Test with pytest
       run: |
         pytest
