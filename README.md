@@ -17,8 +17,8 @@ TODO
   `python server.py`
 
 ## Roadmap
-- [ ] Fully Transition to SQL
-  - [ ] Register
+- [x] Fully Transition to SQL
+  - [x] Register
 - [ ] Create python script to generate database.
 - [ ] Reorganize and comment repository code.
   - [ ] Reorganizing Functions
