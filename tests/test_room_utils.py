@@ -16,9 +16,9 @@ def test_get_room_name():
 @pytest.mark.timeout(10)
 def test_get_room_info():
     rss.connect()
-    ret = room_utils.get_room_info("0", table="Messages", select="message", where="message=\"abc\"")
+    ret = room_utils.get_room_info("0", table="Messages", select="message")
     rss.disconnect()
-    assert ret[0][0] == "abc"
+    assert type(ret) == list
 
 
 @pytest.mark.timeout(10)
@@ -48,4 +48,4 @@ def test_get_rooms():
     rss.connect()
     ret = room_utils.get_rooms()
     rss.disconnect()
-    assert type(ret) == list and len(ret[0]) == 3
+    assert type(ret) == list
