@@ -8,4 +8,4 @@ def test_autocolor():
     rss.connect()
     ret = chat_utils.autocolor(testing=True)
     rss.disconnect()
-    assert ret == "Jush(<span class=\"admin\">ADMIN</span>)"
+    assert ret == "Jush(<span class=\'admin\'>ADMIN</span>)"
