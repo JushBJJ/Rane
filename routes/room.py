@@ -10,10 +10,8 @@ def room(room_id):
         return render_template("banned.html")
 
     if "username" not in session:
-        print("BRUH")
         return redirect("/")
     elif session["username"] == "":
-        print("BRUH")
         return redirect("/")
 
     room_name = room_utils.get_room_name(room_id)

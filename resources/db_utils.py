@@ -61,8 +61,7 @@ def db_insert(cursor: sqlite3.Cursor, table: str, columns: str, values: str, uni
         return True
     except Exception as e:
         if not unique:
-            print("DB_INSERT: ", e)
-            print(f"INSERT INTO {table} ({columns}) VALUES ({values})")
+            # TODO Logging
             return False
         else:
             return True

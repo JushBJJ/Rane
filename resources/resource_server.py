@@ -186,9 +186,6 @@ def create_room(data):
     template = db_utils.correct_path(".", "room_template.db")
     new = db_utils.correct_path("rooms", new_filename)
 
-    print(new)
-    print(template)
-
     shutil.copyfile(template, new)
     socketio.emit(emit, db_utils.db_edit(new_filename, "rooms", create))
 

@@ -22,15 +22,10 @@ class authorize(Resource):
             "where": f"username=\"{username}\" and password=\"{password}\""
         }
 
-        print("BRUH")
-
         # Check
         ret = utils.repeat(
             event="retrieve table",
             data=data,
             return_type=list
         )
-
-        print(ret)
-
         return ret
