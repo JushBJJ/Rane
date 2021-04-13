@@ -28,7 +28,7 @@ def append_message(data):
         message_values = f"\"{author_id}\", \"{author_ip}\", \"{message}\", \"{show}\""
         return db_utils.db_insert(cursor, "Messages", "author_id, author_ip, message, show", message_values)
 
-    room_id = data["room_id"]+".db"
+    room_id = str(data["room_id"])+".db"
 
     author_id = data["author_id"]
     author_ip = data["author_ip"]
@@ -47,7 +47,7 @@ def retrieve_messages(data):
                                     select="message",
                                     where="show=1")
 
-    room_id = data["room_id"]+".db"
+    room_id = str(data["room_id"])+".db"
     received = db_utils.db_edit(room_id, "rooms", retrieve)
     emit = data["emit"]
 
@@ -63,7 +63,7 @@ def delete_message(data):
                                   set_values=set_values,
                                   where=where)
 
-    room_id = data["room_id"]+".db"
+    room_id = str(data["room_id"])+".db"
 
     set_values = "show=0"
     where = data["where"]
@@ -79,7 +79,7 @@ def room_info(data):
         else:
             return db_utils.db_retrieve(cursor, table=table, select=select, where=where)
 
-    room_id = data["room_id"]+".db"
+    room_id = str(data["room_id"])+".db"
 
     table = data["table"]
     select = data["select"]
@@ -163,7 +163,7 @@ def create_room(data):
     owner = data["owner"]
 
     owner_id = data["owner_id"]
-    room_id = data["room_id"]
+    room_id = str(data["room_id"])
     emit = data["emit"]
 
     tables = {

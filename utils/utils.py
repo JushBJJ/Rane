@@ -8,19 +8,19 @@ from utils import rss
 import datetime
 import secrets
 import time
-import asyncio
 
 
 def get_ip():
     return request.remote_addr
 
 
-def get_session():
-    return session
+def convert_to_html(message):
+    msgSplit = ("".join(message.split("["))).split("]")
+    msgTime = msgSplit[0]
+    content = "".join(msgSplit[1:])
 
-
-def get_app():
-    return app
+    newMessage = "<p class=\"msg-time\">"+msgTime+"</p><div class=\"bubble\"><div class=\"message\">"+content+"</div></div>"
+    return newMessage
 
 
 def repeat(event, return_type, **kwargs) -> Any:

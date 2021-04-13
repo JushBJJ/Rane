@@ -1,12 +1,13 @@
-from flask import *
+from flask import session, request
 from datetime import datetime
 from socketio.exceptions import ConnectionRefusedError
+from routes.create_routes import create_routes
 
 import requests
 from utils import room_utils, user_utils, chat_utils, rss, utils
+from routes.auth import auth
 
 import create_app
-import auth
 
 import time
 import base64
@@ -27,19 +28,8 @@ PORT = app.config["PORT"]
 
 api.add_resource(auth.authorize, "/api/authorize")
 
-disconnect_detected = False
 
-
-@client_socket.on("rss maintenance")
-def client_maintenance(data):
-    print("MAINTENANCE")
-    client_socket.emit("maintenance", {})
-    client_socket.stop()
-
-
-@app.route("/maintenance")
-def page_maintenance():
-    return render_template("maintenance.html")
+# RSS
 
 
 @rss.rss_socket.on("message sent")
@@ -47,98 +37,8 @@ def message_sent(data):
     client_socket.emit("force", {"name": "get_comments", "params": data["room_id"]})
 
 
-@ app.route("/")
-def root():
-    if gateway() == True:
-        app.logger.info(f"{request.remote_addr} connected to enter the server.")
-        return render_template("banned.html")
-
-    session["anything"] = ""
-    session["login_error"] = ""
-    session["register_error"] = ""
-    session["username"] = ""
-    session["chat"] = ""
-    session["room_id"] = 0
-
-    return render_template("login.html",
-                           login_error=session["login_error"],
-                           register_error=session["register_error"])
-
-
-@rss.rss_socket.on("connect")
-def connect():
-    try:
-        print("Connected to Resource Server.")
-    except ConnectionRefusedError:
-        rss.disconnect()
-        raise ConnectionRefusedError
-
-
-@rss.rss_socket.on("disconnect")
-def rss_disconnect():
-    global disconnect_detected
-
-    try:
-        print("Disconnected from Resource Server")
-        disconnect_detected = True
-    except ConnectionRefusedError:
-        rss.disconnect()
-        raise ConnectionRefusedError
-
-
-@ client_socket.on("connected")
-def connected(data):
-    room_id = data["params"]
-    pong = data["pong"]
-
-    if gateway():
-        chat_utils.log(f"[{time.asctime()}]<span class=\"server\">SERVER: " + session["username"] + " has been banned."+"</span>", str(room_id))
-        client_socket.emit("redirect")
-        return
-    elif "anything" not in session:
-        session["anything"] = ""
-        session["login_error"] = ""
-        session["register_error"] = ""
-        session["username"] = ""
-        session["chat"] = ""
-        session["room_id"] = ""
-        client_socket.emit("redirect")
-        return
-
-    user_utils.status(session["username"], "Joined")
-    seen = user_utils.get_account_info(session["username"])[3]
-
-    if (datetime.now().minute - user_utils.convert_to_datetime(seen).minute) >= 10:
-        user_utils.online(1, str(room_id))
-    else:
-        user_utils.online(1, str(room_id), silent=True)
-
-    client_socket.emit(pong)
-
-
-@ client_socket.on("disconnect")
-def client_disconnected():
-    global disconnect_detected
-    client_socket.emit("clear tasks")
-    print("\n\nCLIENT DISCONNECTED\n\n")
-    client_socket.stop()
-    disconnect_detected = True
-    user_utils.monitor_activity(session["username"])
-
-
-@ client_socket.on("connect")
-def client_connect():
-    print("\n\nCLIENT CONNECTED\n\n")
-
-
-@client_socket.on("check disconnected")
-def check_disconnected():
-    global disconnect_detected
-
-    if disconnect_detected:
-        client_socket.emit("clear tasks")
-        disconnect_detected = False
-
+# Client-side
+# Rooms Functions
 
 @ client_socket.on("create_room")
 def createRoom(args):
@@ -196,6 +96,8 @@ def get_rooms(data):
     client_socket.emit("recieve_rooms", {"rooms": section})
     client_socket.emit(pong)
 
+# Messages
+
 
 @client_socket.on("new comment")
 def get_new_comment(data):
@@ -203,15 +105,6 @@ def get_new_comment(data):
     message = data["message"]
 
     client_socket.emit("recieve_local_message", data)
-
-
-def convert_to_html(message):
-    msgSplit = ("".join(message.split("["))).split("]")
-    msgTime = msgSplit[0]
-    content = "".join(msgSplit[1:])
-
-    newMessage = "<p class=\"msg-time\">"+msgTime+"</p><div class=\"bubble\"><div class=\"message\">"+content+"</div></div>"
-    return newMessage
 
 
 @client_socket.on("get_comments")
@@ -225,7 +118,7 @@ def get_comments(data):
     session["messages"] = messages
 
     for message in messages["messages"]:
-        newMessages += convert_to_html(message)
+        newMessages += utils.convert_to_html(message)
 
     client_socket.emit("recieve_comments", {"messages": newMessages, "room_id": room_id}, broadcast=True)
 
@@ -234,117 +127,6 @@ def get_comments(data):
         client_socket.emit("new_messages", {"room_id": room_id}, broadcast=True)
 
     client_socket.emit(pong)
-
-
-@ client_socket.on("get_online")
-def get_online(data):
-    pong = data["pong"]
-
-    client_socket.emit("recieve_online", {"online": user_utils.get_online()})
-    client_socket.emit(pong)
-
-
-@ app.route("/login", methods=["POST"])
-def login():
-    username = request.form["login-username"]
-    password = hashlib.sha256(request.form["login-password"].encode()).hexdigest()
-
-    data = {
-        "filename": "accounts",
-        "folder": "server",
-        "table": "accounts",
-        "select": "username, password",
-        "where": f"username=\"{username}\" and password=\"{password}\""
-    }
-
-    # Check
-    ret = utils.repeat(
-        event="retrieve table",
-        data=data,
-        return_type=list
-    )
-
-    if ret:
-        session["username"] = username
-
-        user_utils.online(1, 0)
-        chat_utils.autocolor()
-        return redirect("/room/0")
-
-    session["login_error"] = "Invalid Username or Password"
-    return redirect("/")
-
-
-@ app.route("/register", methods=["POST"])
-def register():
-    username = request.form["register-username"]
-    password = hashlib.sha256(request.form["register-password"].encode()).hexdigest()
-    confirm_password = hashlib.sha256(request.form["register-password-again"].encode()).hexdigest()
-    ip = request.remote_addr
-
-    if not password == confirm_password:
-        session["register_error"] = "Password and confirmation password do not match."
-        return redirect("/")
-
-    data = {
-        "filename": "accounts",
-        "folder": "server",
-        "table": "accounts",
-        "select": "username",
-        "where": f"username=\"{username}\""
-    }
-
-    # Check
-    ret = utils.repeat(
-        event="retrieve table",
-        data=data,
-        return_type=list
-    )
-
-    if not ret:
-        utils.repeat(
-            event="append table",
-            data={
-                "filename": "accounts",
-                "folder": "server",
-                "table": "accounts",
-                "columns": "username, password, ip",
-                "values": f"\"{username}\", \"{password}\", \"{ip}\"",
-                "unique": False
-            },
-            return_type=bool
-        )
-        session["username"] = username
-
-        user_utils.online(1, 0)
-        chat_utils.autocolor()
-        return redirect("/room/0")
-
-    session["register_error"] = "Username already taken."
-    return redirect("/")
-
-
-@ app.route("/room/<room_id>")
-def chat(room_id):
-    if gateway():
-        return render_template("banned.html")
-
-    if "username" not in session:
-        return redirect("/")
-    elif session["username"] == "":
-        return redirect("/")
-
-    room_name = room_utils.get_room_name(room_id)
-    room_admin = session["username"] in room_utils.get_room_info(room_id, "Admins", where=f"Username=\'{session['username']}\'")
-
-    user_id = user_utils.get_account_info(session["username"])[4]
-
-    return render_template("chat.html",
-                           room_id=str(room_id),
-                           room_name=room_name,
-                           username=session["username"],
-                           room_admin=room_admin,
-                           user_id=user_id)
 
 
 @ client_socket.on("send")
@@ -369,51 +151,34 @@ def send(message, room_id, author_id):
 
     data = {
         "room_id": room_id,
-        "message": convert_to_html(msg)
+        "message": utils.convert_to_html(msg)
     }
     client_socket.emit("recieve_local_message", data, broadcast=True, include_self=True)
     client_socket.emit("new_messages", data, broadcast=True, include_self=True)
 
 
-def gateway():
-    ip = request.remote_addr
+# Get connections
+@ client_socket.on("get_online")
+def get_online(data):
+    pong = data["pong"]
 
-    data = {
-        "filename": "blacklist",
-        "folder": "server",
-        "table": "blacklist",
-        "select": "ip",
-        "where": f"ip=\"{ip}\""
-    }
+    client_socket.emit("recieve_online", {"online": user_utils.get_online()})
+    client_socket.emit(pong)
 
-    is_blacklisted = utils.repeat(
-        function=rss.rss_socket.emit,
-        event="retrieve table",
-        data=data,
-        return_type=list
-    )
-
-    blacklisted_users = [user[0] for user in is_blacklisted]
-
-    if ip in blacklisted_users:
-        return True
-
-    return False
-
-
-def disconnect():
-    rss.disconnect()
+# Main
 
 
 def main():
-    rss.disconnect()
     rss.connect()
 
-    atexit.register(disconnect)
+    atexit.register(rss.disconnect)
     user_utils.clear_online()
     print("STARTED WEBSITE SERVER")
 
     print("PORT: ", app.config["PORT"])
+    print("HOST: ", app.config["HOST"])
+
+    create_routes()
     client_socket.run(app, host=HOST, port=PORT, debug=False)
     print("Exiting Server...")
     client_socket.stop()
