@@ -1,9 +1,12 @@
 from flask import Flask
 from flask_socketio import SocketIO
+from typing import Any
+from client import resource_connection as rc
 
 import resources.create_rss_app as create_app
 import resources.db_utils as db_utils
 import shutil
+import sqlite3
 
 create_app.create("resource_config.py")
 
@@ -14,17 +17,14 @@ HOST = app.config["HOST"]
 PORT = app.config["PORT"]
 
 
-@socketio.on("close")
-def close(data):
-    app.logger.info("\n\nMAINTENANCE MODE ACTIVATED\n\n")
-    socketio.emit("rss maintenance", {}, broadcast=True)
-    socketio.stop()
-    exit()
+def register_external_receivers() -> None:
+    socketio.on_event("connect", rc.connect)
+    socketio.on_event("disconnect", rc.disconnect)
 
 
 @socketio.on("append message")
-def append_message(data):
-    def append(cursor):
+def append_message(data: dict) -> None:
+    def append(cursor: sqlite3.Cursor) -> Any:
         message_values = f"\"{author_id}\", \"{author_ip}\", \"{message}\", \"{show}\""
         return db_utils.db_insert(cursor, "Messages", "author_id, author_ip, message, show", message_values)
 
@@ -36,14 +36,14 @@ def append_message(data):
     show = 1
     emit = data["emit"]
 
-    app.logger.info(f"\n\nNew message from {author_id} ({author_ip}): {message}\n\n")
+    app.logger.info(f"New message from {author_id} ({author_ip}): {message}")
 
     socketio.emit(emit, db_utils.db_edit(room_id, "rooms", append))
 
 
 @socketio.on("retrieve messages")
-def retrieve_messages(data):
-    def retrieve(cursor):
+def retrieve_messages(data: dict) -> None:
+    def retrieve(cursor: sqlite3.Cursor) -> Any:
         return db_utils.db_retrieve(cursor,
                                     table="Messages",
                                     select="message",
@@ -58,8 +58,8 @@ def retrieve_messages(data):
 
 
 @socketio.on("delete message")
-def delete_message(data):
-    def delete(cursor):
+def delete_message(data: dict) -> None:
+    def delete(cursor: sqlite3.Cursor) -> Any:
         return db_utils.db_update(cursor,
                                   table="room_messages",
                                   set_values=set_values,
@@ -74,8 +74,8 @@ def delete_message(data):
 
 
 @socketio.on("retrieve room info")
-def room_info(data):
-    def get_info(cursor):
+def room_info(data: dict) -> None:
+    def get_info(cursor: sqlite3.Cursor) -> Any:
         if where == "":
             return db_utils.db_retrieve_all(cursor, table=table)
         else:
@@ -92,8 +92,8 @@ def room_info(data):
 
 
 @socketio.on("select all")
-def select_all(data):
-    def retrieve(cursor):
+def select_all(data: dict) -> None:
+    def retrieve(cursor: sqlite3.Cursor) -> Any:
         return db_utils.db_retrieve_all(cursor, table=table)
 
     table = data["table"]
@@ -105,8 +105,8 @@ def select_all(data):
 
 
 @socketio.on("update table")
-def update_table(data):
-    def update(cursor):
+def update_table(data: dict) -> None:
+    def update(cursor: sqlite3.Cursor) -> Any:
         return db_utils.db_update(
             cursor,
             table=table,
@@ -125,8 +125,8 @@ def update_table(data):
 
 
 @socketio.on("append table")
-def append_table(data):
-    def append(cursor):
+def append_table(data: dict) -> None:
+    def append(cursor: sqlite3.Cursor) -> Any:
         return db_utils.db_insert(
             cursor,
             table=table,
@@ -147,8 +147,8 @@ def append_table(data):
 
 
 @socketio.on("create room")
-def create_room(data):
-    def create(cursor):
+def create_room(data: dict) -> None:
+    def create(cursor: sqlite3.Cursor) -> Any:
         returns = []
         for table in tables.keys():
             returns.append(
@@ -193,8 +193,8 @@ def create_room(data):
 
 
 @socketio.on("delete row")
-def delete_row(data):
-    def delete(cursor):
+def delete_row(data: dict) -> None:
+    def delete(cursor: sqlite3.Cursor) -> Any:
         return db_utils.db_delete(
             cursor,
             table=table,
@@ -211,8 +211,8 @@ def delete_row(data):
 
 
 @socketio.on("truncate")
-def truncate_table(data):
-    def truncate(cursor):
+def truncate_table(data: dict) -> None:
+    def truncate(cursor: sqlite3.Cursor) -> Any:
         return db_utils.db_truncate(
             cursor,
             table=table
@@ -227,8 +227,8 @@ def truncate_table(data):
 
 
 @ socketio.on("retrieve table")
-def retrieve_table(data):
-    def retrieve(cursor):
+def retrieve_table(data: dict) -> None:
+    def retrieve(cursor: sqlite3.Cursor) -> Any:
         ret = db_utils.db_retrieve(
             cursor,
             table=table,
@@ -249,8 +249,8 @@ def retrieve_table(data):
 
 
 @ socketio.on("is blacklisted")
-def is_blacklisted(data):
-    def check(cursor):
+def is_blacklisted(data: dict) -> None:
+    def check(cursor: sqlite3.Cursor) -> Any:
         return db_utils.db_retrieve(
             cursor,
             table="blacklist",
@@ -263,7 +263,9 @@ def is_blacklisted(data):
 
 
 def main():
-    app.logger.info(f"\n\nSTARTED RESOURCE SERVER\n\tHOST: {HOST}\n\tPORT: {PORT}\n\n")
+    register_external_receivers()
+
+    app.logger.info(f"STARTED RESOURCE SERVER\n\tHOST: {HOST}\n\tPORT: {PORT}")
     socketio.run(app, host=HOST, port=PORT, debug=False)
 
 

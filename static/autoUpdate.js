@@ -102,6 +102,11 @@ socket.on("force", function (data) {
     socket.emit(data["name"], data["params"])
 })
 
+socket.on("force disconnect", function(data){
+    socket.disconnect()
+    window.location="/";
+})
+
 setInterval(check_disconnected, 5000)
 setInterval(ping, 120000)
 setInterval(ping_important, 10000)

@@ -16,5 +16,8 @@
     ],
     "sqltools.useNodeRuntime": true,
     "pythonTestExplorer.testFramework": "pytest",
-    "python.autoComplete.addBrackets": true
+    "python.autoComplete.addBrackets": true,
+    "cSpell.words": [
+        "autoscroll"
+    ]
 }

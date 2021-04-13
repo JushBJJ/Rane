@@ -7,7 +7,7 @@ from routes.auth.register import register
 import create_app
 
 
-def create_routes():
+def create_routes() -> None:
     app = create_app.app
 
     # Main Pages

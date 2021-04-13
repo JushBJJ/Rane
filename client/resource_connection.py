@@ -2,8 +2,7 @@ from utils import rss
 from flask import request, current_app
 
 
-@rss.rss_socket.on("connect")
-def connect():
+def connect() -> None:
     try:
         current_app.logger.info(f"[{request.remote_addr}] Connected to Resource Server.")
     except ConnectionRefusedError:
@@ -11,13 +10,9 @@ def connect():
         raise ConnectionRefusedError
 
 
-@rss.rss_socket.on("disconnect")
-def rss_disconnect():
-    global disconnect_detected
-
+def disconnect() -> None:
     try:
         current_app.logger.info(f"[{request.remote_addr}] Disconnected from Resource Server")
-        disconnect_detected = True
     except ConnectionRefusedError:
         rss.disconnect()
         raise ConnectionRefusedError

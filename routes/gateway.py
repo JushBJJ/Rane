@@ -2,7 +2,7 @@ from flask import request
 from utils import utils, rss
 
 
-def gateway():
+def gateway() -> bool:
     ip = request.remote_addr
 
     data = {

@@ -1,3 +1,4 @@
+from typing import Any
 from flask import request, session, render_template
 
 import routes.gateway as routes
@@ -7,7 +8,7 @@ import create_app
 app = create_app.app
 
 
-def root():
+def root() -> Any:
     if routes.gateway() == True:
         app.logger.info(f"{request.remote_addr} connected to enter the server.")
         return render_template("banned.html")

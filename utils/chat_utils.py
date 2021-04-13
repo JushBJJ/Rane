@@ -9,7 +9,7 @@ import datetime
 import flask
 
 
-def autocolor(testing=False):
+def autocolor(testing: bool = False) -> str:
     session = get_session()
 
     if testing:

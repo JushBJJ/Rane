@@ -9,7 +9,7 @@ api = None
 socketio = None
 
 
-def create(config_filename):
+def create(config_filename: str) -> None:
     global app
     global api
     global socketio

@@ -2,6 +2,7 @@ from flask import session, request
 from datetime import datetime
 from socketio.exceptions import ConnectionRefusedError
 from routes.create_routes import create_routes
+from client import website_connection as wc
 
 import requests
 from utils import room_utils, user_utils, chat_utils, rss, utils
@@ -29,21 +30,20 @@ PORT = app.config["PORT"]
 api.add_resource(auth.authorize, "/api/authorize")
 
 
-# RSS
-
-
-@rss.rss_socket.on("message sent")
-def message_sent(data):
-    client_socket.emit("force", {"name": "get_comments", "params": data["room_id"]})
-
+def register_external_receivers() -> None:
+    client_socket.on_event("disconnect", wc.client_disconnected)
+    client_socket.on_event("connect", wc.client_connect)
+    client_socket.on_event("connected", wc.connected)
+    client_socket.on_event("rss maintenance", wc.client_maintenance)
 
 # Client-side
 # Rooms Functions
 
+
 @ client_socket.on("create_room")
-def createRoom(args):
-    name = html.escape(args["name"])
-    desc = html.escape(args["desc"])
+def createRoom(args: dict) -> bool:
+    name: str = html.escape(args["name"])
+    desc: str = html.escape(args["desc"])
     public = int(args["public"] == "Public")
     owner = args["owner"]
 
@@ -78,7 +78,7 @@ def createRoom(args):
 
 
 @client_socket.on("get_rooms")
-def get_rooms(data):
+def get_rooms(data: dict) -> None:
     pong = data["pong"]
 
     rooms = room_utils.get_rooms()
@@ -100,7 +100,7 @@ def get_rooms(data):
 
 
 @client_socket.on("new comment")
-def get_new_comment(data):
+def get_new_comment(data: dict) -> None:
     room_id = data["room_id"]
     message = data["message"]
 
@@ -108,14 +108,12 @@ def get_new_comment(data):
 
 
 @client_socket.on("get_comments")
-def get_comments(data):
+def get_comments(data: dict) -> None:
     room_id = data["params"]
     pong = data["pong"]
 
     messages = room_utils.get_room_messages(room_id)
     newMessages = ""
-
-    session["messages"] = messages
 
     for message in messages["messages"]:
         newMessages += utils.convert_to_html(message)
@@ -130,7 +128,7 @@ def get_comments(data):
 
 
 @ client_socket.on("send")
-def send(message, room_id, author_id):
+def send(message: str, room_id: int, author_id: int) -> None:
     if message == "\n" or message[0] == " ":
         return
 
@@ -157,7 +155,7 @@ def send(message, room_id, author_id):
 
 # Get connections
 @ client_socket.on("get_online")
-def get_online(data):
+def get_online(data: dict) -> None:
     pong = data["pong"]
 
     client_socket.emit("recieve_online", {"online": user_utils.get_online()})
@@ -166,14 +164,15 @@ def get_online(data):
 # Main
 
 
-def main():
+def main() -> None:
     rss.connect()
 
     atexit.register(rss.disconnect)
     user_utils.clear_online()
     create_routes()
+    register_external_receivers()
 
-    app.logger.info(f"\n\nSTARTED SERVER:\n\tHOST: {HOST}\n\tPORT: {PORT}\n\n")
+    app.logger.info(f"STARTED SERVER:\n\tHOST: {HOST}\n\tPORT: {PORT}")
     client_socket.run(app, host=HOST, port=PORT, debug=False)
     client_socket.stop()
     rss.disconnect()
