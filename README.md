@@ -21,7 +21,6 @@ Rane is a chat client aimed to solve the issue of _______ _________ chat client 
 
    to
 
-   `
    `rss_socket.connect("http://YOUR_IP_HOST_AND_PORT/")`
 
     
