@@ -7,7 +7,7 @@ import json
 import time
 
 
-def status(username, status):
+def status(username: str, status: str) -> bool:
     return utils.repeat(
         event="update table",
         data={
@@ -21,7 +21,7 @@ def status(username, status):
     )
 
 
-def get_online():
+def get_online() -> int:
     returned = utils.repeat(
         event="retrieve table",
         data={
@@ -37,7 +37,7 @@ def get_online():
     return len(returned)
 
 
-def online(num, room_id, silent=False, testing=False):
+def online(num: int, room_id: str, silent: bool = False, testing: bool = False) -> bool:
     # TODO Server message
     if not testing:
         session = get_session()
@@ -77,7 +77,7 @@ def online(num, room_id, silent=False, testing=False):
     return returned
 
 
-def clear_online():
+def clear_online() -> bool:
     return utils.repeat(
         event="truncate",
         return_type=bool,
@@ -89,7 +89,7 @@ def clear_online():
     )
 
 
-def get_account_info(username):
+def get_account_info(username: str) -> list:
     return utils.repeat(
         event="retrieve table",
         return_type=list,
@@ -103,11 +103,11 @@ def get_account_info(username):
     )[0]
 
 
-def convert_to_datetime(ctime):
+def convert_to_datetime(ctime: str) -> datetime:
     return datetime.strptime(ctime, "%c")
 
 
-def monitor_activity(username):
+def monitor_activity(username: str) -> None:
     session = get_session()
 
     for _ in range(10):

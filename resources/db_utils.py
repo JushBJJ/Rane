@@ -2,13 +2,13 @@ import sqlite3
 import os
 
 from sqlite3.dbapi2 import DatabaseError
-from typing import Tuple
+from typing import Any, Tuple
 from flask import current_app as app
 
 # TODO Think about unit testing for this.
 
 
-def db_edit(filename, folder, function):
+def db_edit(filename: str, folder: str, function: Any) -> Any:
     def wrapper(*args, **kwargs):
         path = correct_path(folder, filename)
 
@@ -30,7 +30,7 @@ def db_edit(filename, folder, function):
     return wrapper()
 
 
-def correct_path(folder, filename):
+def correct_path(folder: str, filename: str) -> str:
     data = os.path.dirname(os.path.abspath(__file__))+"/../data/"
     path = data+folder+"/"+filename
     path__ = data+folder
@@ -41,7 +41,7 @@ def correct_path(folder, filename):
         return data+filename
 
 
-def db_insert(cursor: sqlite3.Cursor, table: str, columns: str, values: str, unique: bool = False):
+def db_insert(cursor: sqlite3.Cursor, table: str, columns: str, values: str, unique: bool = False) -> bool:
     try:
         # Check if value in table
         if unique:
@@ -69,7 +69,7 @@ def db_insert(cursor: sqlite3.Cursor, table: str, columns: str, values: str, uni
             return True
 
 
-def db_retrieve(cursor: sqlite3.Cursor, table: str, select: str, where: str):
+def db_retrieve(cursor: sqlite3.Cursor, table: str, select: str, where: str) -> list:
     if where == "":
         ret = cursor.execute(f"SELECT {select} FROM {table}")
     else:
@@ -82,12 +82,12 @@ def db_retrieve(cursor: sqlite3.Cursor, table: str, select: str, where: str):
     return ret.fetchall()
 
 
-def db_retrieve_all(cursor: sqlite3.Cursor, table: str):
+def db_retrieve_all(cursor: sqlite3.Cursor, table: str) -> list:
     ret = cursor.execute(f"SELECT * FROM {table}")
     return ret.fetchall()
 
 
-def db_update(cursor: sqlite3.Cursor, table: str, set_values: str, where: str):
+def db_update(cursor: sqlite3.Cursor, table: str, set_values: str, where: str) -> bool:
     try:
         cursor.execute(f"UPDATE {table} SET {set_values} WHERE {where}")
         return True
@@ -96,7 +96,7 @@ def db_update(cursor: sqlite3.Cursor, table: str, set_values: str, where: str):
         return False
 
 
-def db_truncate(cursor, table: str):
+def db_truncate(cursor: sqlite3.Cursor, table: str) -> bool:
     try:
         cursor.execute(f"DELETE FROM {table}")
         return True
@@ -105,7 +105,7 @@ def db_truncate(cursor, table: str):
         return False
 
 
-def db_delete(cursor, table: str, where: str):
+def db_delete(cursor: sqlite3.Cursor, table: str, where: str) -> bool:
     try:
         cursor.execute(f"DELETE FROM {table} WHERE {where}")
         return True

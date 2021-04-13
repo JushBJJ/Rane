@@ -8,7 +8,7 @@ import datetime
 rdir = os.path.abspath(__file__)+"/../../data/rooms/"
 
 
-def list_rooms():
+def list_rooms() -> list:
     files = []
 
     for file in os.listdir(rdir):
@@ -18,7 +18,7 @@ def list_rooms():
     return files
 
 
-def get_room_messages(room_id):
+def get_room_messages(room_id: str) -> dict:
     ret = utils.repeat(
         event="retrieve messages",
         return_type=dict,
@@ -29,7 +29,7 @@ def get_room_messages(room_id):
     return ret
 
 
-def get_room_info(room_id, table, select="*", where="") -> list:
+def get_room_info(room_id: str, table: str, select: str = "*", where: str = "") -> list:
     data = {
         "table": table,
         "room_id": room_id,
@@ -47,7 +47,7 @@ def get_room_info(room_id, table, select="*", where="") -> list:
     return room_info
 
 
-def set_room_info(room_id, table, where, value):
+def set_room_info(room_id: str, table: str, where: str, value: str) -> bool:
     data = {
         "filename": room_id,
         "folder": "rooms",
@@ -64,12 +64,12 @@ def set_room_info(room_id, table, where, value):
     return success
 
 
-def get_room_name(room_id):
+def get_room_name(room_id: str) -> str:
     ret = get_room_info(room_id=str(room_id), table="Name", select="Name")
     return ret[0][0]
 
 
-def get_rooms():
+def get_rooms() -> list:
     ret = utils.repeat(
         event="retrieve table",
         return_type=list,

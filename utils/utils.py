@@ -1,4 +1,5 @@
 from typing import Any
+import flask
 from flask import request
 from flask import current_app as app
 from flask import session
@@ -10,19 +11,19 @@ import secrets
 import time
 
 
-def get_ip():
+def get_ip() -> str:
     return request.remote_addr
 
 
-def get_session():
+def get_session() -> session:
     return session
 
 
-def get_app():
+def get_app() -> flask.Flask:
     return app
 
 
-def convert_to_html(message):
+def convert_to_html(message: str) -> str:
     msgSplit = ("".join(message.split("["))).split("]")
     msgTime = msgSplit[0]
     content = "".join(msgSplit[1:])
@@ -31,7 +32,7 @@ def convert_to_html(message):
     return newMessage
 
 
-def repeat(event, return_type, **kwargs) -> Any:
+def repeat(event: str, return_type: Any, **kwargs) -> Any:
     """
     repeat For socketio functions
 
@@ -41,41 +42,28 @@ def repeat(event, return_type, **kwargs) -> Any:
 
     Returns:
         Any: Any Data, will return False if failed.
-
-    Data Requirements (Possible):
-        filename
-
-        folder
-
-        emit
-
-        table
-
-        select
-
-        where
     """
     event_get = secrets.token_urlsafe()
 
     @rss.rss_socket.on(event_get)
-    def event_func(data):
+    def event_func(data: Any) -> None:
         nonlocal returned
         nonlocal run
         returned = None
 
         if data == False:
-            app.logger.info(f"[{event_get}] Operation failed. Retrying in 5 seconds...")
-            app.logger.info(f"[{event_get}] Operation data: {data}")
+            app.logger.info(f"[{event}] Operation failed. Retrying in 5 seconds...")
+            app.logger.info(f"[{event}] Operation data: {data}")
             run = False
             rss.rss_socket.sleep(5)
             run = True
         elif type(data) == return_type:
             returned = data
         else:
-            app.logger.info(f"[{event_get}] Wrong type returned: {type(data)}, expected {return_type}.")
-            app.logger.info(f"[{event_get}] Operation data: {data}")
+            app.logger.info(f"[{event}] Wrong type returned: {type(data)}, expected {return_type}.")
+            app.logger.info(f"[{event}] Operation data: {data}")
 
-    def wrapper():
+    def wrapper() -> Any:
         nonlocal returned
         nonlocal run
         returned = None

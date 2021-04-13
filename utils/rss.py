@@ -7,7 +7,7 @@ rss_socket = rss.Client(reconnection=True)
 loop = asyncio.get_event_loop()
 
 
-def connect():
+def connect() -> bool:
     try:
         if not rss_socket.connected:
             rss_socket.connect("http://192.168.1.10:5001/")
@@ -18,7 +18,7 @@ def connect():
         return False
 
 
-def disconnect():
+def disconnect() -> bool:
     try:
         rss_socket.disconnect()
         return True
@@ -27,5 +27,5 @@ def disconnect():
         return False
 
 
-def get_socket():
+def get_socket() -> rss.Client:
     return rss_socket

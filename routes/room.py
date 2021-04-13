@@ -1,10 +1,11 @@
+from typing import Any
 from flask import session, redirect, render_template
 from utils import room_utils, user_utils
 
 import routes.gateway as routes
 
 
-def room(room_id):
+def room(room_id: str) -> Any:
     if routes.gateway():
         return render_template("banned.html")
 

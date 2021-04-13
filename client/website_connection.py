@@ -1,4 +1,5 @@
 from flask import session, request
+from flask import current_app as app
 from utils import user_utils, chat_utils
 from datetime import datetime
 
@@ -7,26 +8,19 @@ import create_app
 import time
 
 
-app = create_app.app
-
-client_socket = create_app.socketio
-
-
-@ client_socket.on("disconnect")
-def client_disconnected():
+def client_disconnected() -> None:
+    client_socket = create_app.socketio
     client_socket.emit("clear tasks")
-    app.logger.info(f"\n\n[{request.remote_addr}]CLIENT DISCONNECTED\n\n")
-    client_socket.stop()
+    app.logger.info(f"[{request.remote_addr}]CLIENT DISCONNECTED")
     user_utils.monitor_activity(session["username"])
 
 
-@ client_socket.on("connect")
-def client_connect():
-    app.logger.info(f"\n\n[{request.remote_addr}]CLIENT CONNECTED\n\n")
+def client_connect() -> None:
+    app.logger.info(f"[{request.remote_addr}]CLIENT CONNECTED")
 
 
-@ client_socket.on("connected")
-def connected(data):
+def connected(data: dict) -> None:
+    client_socket = create_app.socketio
     room_id = data["params"]
     pong = data["pong"]
 
@@ -55,8 +49,7 @@ def connected(data):
     client_socket.emit(pong)
 
 
-@client_socket.on("rss maintenance")
-def client_maintenance(data):
+def client_maintenance(data: dict) -> None:
+    client_socket = create_app.socketio
     app.logger.info("CLIENT RAISED MAINTENANCE MODE")
     client_socket.emit("maintenance", {})
-    client_socket.stop()
