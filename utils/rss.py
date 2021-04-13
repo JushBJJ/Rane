@@ -1,6 +1,7 @@
 import socketio as rss
 import asyncio
 
+from flask import current_app as app
 # Connect to Resource server
 rss_socket = rss.Client(reconnection=True)
 loop = asyncio.get_event_loop()
@@ -13,7 +14,7 @@ def connect():
             rss_socket.sleep(2)
         return True
     except Exception as e:
-        print(e)
+        app.logger.info(e)
         return False
 
 
@@ -22,7 +23,7 @@ def disconnect():
         rss_socket.disconnect()
         return True
     except Exception as e:
-        print(e)
+        app.logger.info(e)
         return False
 
 

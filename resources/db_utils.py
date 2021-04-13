@@ -1,7 +1,9 @@
 import sqlite3
 import os
+
 from sqlite3.dbapi2 import DatabaseError
 from typing import Tuple
+from flask import current_app as app
 
 # TODO Think about unit testing for this.
 
@@ -13,7 +15,7 @@ def db_edit(filename, folder, function):
         try:
             db = sqlite3.connect(path)
         except DatabaseError as e:
-            print(e)
+            app.logger.info(e)
             raise
 
         cursor = db.cursor()
@@ -74,8 +76,8 @@ def db_retrieve(cursor: sqlite3.Cursor, table: str, select: str, where: str):
         try:
             ret = cursor.execute(f"SELECT {select} FROM {table} WHERE {where}")
         except sqlite3.OperationalError as e:
-            print(e)
-            print(f"SELECT {select} FROM {table} WHERE {where}")
+            app.logger.info(e)
+            app.logger.info(f"SELECT {select} FROM {table} WHERE {where}")
             raise e
     return ret.fetchall()
 
@@ -90,7 +92,7 @@ def db_update(cursor: sqlite3.Cursor, table: str, set_values: str, where: str):
         cursor.execute(f"UPDATE {table} SET {set_values} WHERE {where}")
         return True
     except Exception as e:
-        print("Error: ", e)
+        app.logger.info("Error: ", e)
         return False
 
 
@@ -99,7 +101,7 @@ def db_truncate(cursor, table: str):
         cursor.execute(f"DELETE FROM {table}")
         return True
     except Exception as e:
-        print(e)
+        app.logger.info(e)
         return False
 
 
@@ -108,5 +110,5 @@ def db_delete(cursor, table: str, where: str):
         cursor.execute(f"DELETE FROM {table} WHERE {where}")
         return True
     except Exception as e:
-        print(e)
+        app.logger.info(e)
         return False

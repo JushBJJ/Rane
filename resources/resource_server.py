@@ -16,7 +16,7 @@ PORT = app.config["PORT"]
 
 @socketio.on("close")
 def close(data):
-    print("DISCONNECTING...")
+    app.logger.info("\n\nMAINTENANCE MODE ACTIVATED\n\n")
     socketio.emit("rss maintenance", {}, broadcast=True)
     socketio.stop()
     exit()
@@ -35,6 +35,8 @@ def append_message(data):
     message = data["message"]
     show = 1
     emit = data["emit"]
+
+    app.logger.info(f"\n\nNew message from {author_id} ({author_ip}): {message}\n\n")
 
     socketio.emit(emit, db_utils.db_edit(room_id, "rooms", append))
 
@@ -261,8 +263,7 @@ def is_blacklisted(data):
 
 
 def main():
-    print("STARTED RESOURCE SERVER")
-    print("RSS PORT: ", app.config["PORT"])
+    app.logger.info(f"\n\nSTARTED RESOURCE SERVER\n\tHOST: {HOST}\n\tPORT: {PORT}\n\n")
     socketio.run(app, host=HOST, port=PORT, debug=False)
 
 
