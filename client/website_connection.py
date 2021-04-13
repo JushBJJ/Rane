@@ -1,4 +1,4 @@
-from flask import session
+from flask import session, request
 from utils import user_utils, chat_utils
 from datetime import datetime
 
@@ -15,14 +15,14 @@ client_socket = create_app.socketio
 @ client_socket.on("disconnect")
 def client_disconnected():
     client_socket.emit("clear tasks")
-    print("\n\nCLIENT DISCONNECTED\n\n")
+    app.logger.info(f"\n\n[{request.remote_addr}]CLIENT DISCONNECTED\n\n")
     client_socket.stop()
     user_utils.monitor_activity(session["username"])
 
 
 @ client_socket.on("connect")
 def client_connect():
-    print("\n\nCLIENT CONNECTED\n\n")
+    app.logger.info(f"\n\n[{request.remote_addr}]CLIENT CONNECTED\n\n")
 
 
 @ client_socket.on("connected")
@@ -57,6 +57,6 @@ def connected(data):
 
 @client_socket.on("rss maintenance")
 def client_maintenance(data):
-    print("MAINTENANCE")
+    app.logger.info("CLIENT RAISED MAINTENANCE MODE")
     client_socket.emit("maintenance", {})
     client_socket.stop()

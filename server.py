@@ -134,8 +134,6 @@ def send(message, room_id, author_id):
     if message == "\n" or message[0] == " ":
         return
 
-    print("\n\nNEW MESSAGE\n\n")
-
     user = session["special"]
     msg = f"[{time.asctime()}]{user}: "+html.escape(message)
     utils.repeat(
@@ -173,14 +171,10 @@ def main():
 
     atexit.register(rss.disconnect)
     user_utils.clear_online()
-    print("STARTED WEBSITE SERVER")
-
-    print("PORT: ", app.config["PORT"])
-    print("HOST: ", app.config["HOST"])
-
     create_routes()
+
+    app.logger.info(f"\n\nSTARTED SERVER:\n\tHOST: {HOST}\n\tPORT: {PORT}\n\n")
     client_socket.run(app, host=HOST, port=PORT, debug=False)
-    print("Exiting Server...")
     client_socket.stop()
     rss.disconnect()
 

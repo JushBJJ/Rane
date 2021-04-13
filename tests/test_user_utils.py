@@ -39,7 +39,6 @@ def test_get_account_info():
     ret = user_utils.get_account_info("Jush")
     rss.disconnect()
 
-    print(ret)
     assert type(ret) == list
 
 # TODO Create test for monitor activity

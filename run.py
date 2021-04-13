@@ -10,7 +10,7 @@ class RSSServer(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        print("Staring RSS Server")
+        print("Starting RSS Server")
         resource_server.main()
         print("Stopped RSS Server")
 
@@ -20,7 +20,7 @@ class WebsiteServer(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        print("Staring Website Server")
+        print("Starting Website Server")
         server.main()
         print("Stopped Website Server")
 

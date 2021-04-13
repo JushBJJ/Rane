@@ -14,6 +14,14 @@ def get_ip():
     return request.remote_addr
 
 
+def get_session():
+    return session
+
+
+def get_app():
+    return app
+
+
 def convert_to_html(message):
     msgSplit = ("".join(message.split("["))).split("]")
     msgTime = msgSplit[0]
@@ -56,16 +64,16 @@ def repeat(event, return_type, **kwargs) -> Any:
         returned = None
 
         if data == False:
-            print("Operation failed. Retrying in 5 seconds...")
-            print("Operation: ", data)
+            app.logger.info(f"[{event_get}] Operation failed. Retrying in 5 seconds...")
+            app.logger.info(f"[{event_get}] Operation data: {data}")
             run = False
             rss.rss_socket.sleep(5)
             run = True
         elif type(data) == return_type:
             returned = data
         else:
-            print(f"Wrong type returned: {type(data)}, expected {return_type}.")
-            print("Operation: ", data)
+            app.logger.info(f"[{event_get}] Wrong type returned: {type(data)}, expected {return_type}.")
+            app.logger.info(f"[{event_get}] Operation data: {data}")
 
     def wrapper():
         nonlocal returned
@@ -94,11 +102,11 @@ def repeat(event, return_type, **kwargs) -> Any:
                     if retry >= 10:
                         break
 
-                    print("Retrying...")
+                    app.logger.info(f"[{event_get}] Retrying operation...")
                     time.sleep(2)
 
             elif returned == False:
-                print("Function failed. Trying again...")
+                app.logger.info(f"[{event_get}] Function failed. Trying again...")
                 returned = None
             else:
                 break

@@ -28,4 +28,4 @@ def create(config_filename):
         app.config["PORT"] = "5001"
 
     api = Api(app)
-    socketio = SocketIO(app, logger=True, always_connect=True)
+    socketio = SocketIO(app, always_connect=True)

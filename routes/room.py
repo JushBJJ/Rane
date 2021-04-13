@@ -5,7 +5,6 @@ import routes.gateway as routes
 
 
 def room(room_id):
-    print(room_id)
     if routes.gateway():
         return render_template("banned.html")
 
