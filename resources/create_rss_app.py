@@ -27,6 +27,7 @@ def create(config_filename: str) -> None:
     except FileNotFoundError:
         app.config["HOST"] = socket.gethostbyname(socket.gethostname())
         app.config["PORT"] = "5001"
+        app.config["SECRET_KEY"] = "dadada"
 
     api = Api(app)
     socketio = SocketIO(app, always_connect=True)

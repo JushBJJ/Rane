@@ -12,7 +12,6 @@ loop = asyncio.get_event_loop()
 def connect() -> bool:
     """Connect to resource server."""
     ip = "http://"+socket.gethostbyname(socket.gethostname())+":5001"
-    print(ip)
     try:
         if not rss_socket.connected:
             rss_socket.connect(ip)

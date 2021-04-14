@@ -55,7 +55,30 @@ databases = {
         CREATE TABLE "online" (
         	"username"	TEXT UNIQUE
         );
-    ''']
+    '''],
+    "./server/accounts.db": ['''
+        CREATE TABLE "accounts" (
+        	"username"	TEXT,
+        	"password"	TEXT,
+        	"ip"	TEXT,
+        	"status"	TEXT,
+        	"seen"	TEXT,
+        	"id"	INTEGER UNIQUE,
+        	"server role"	TEXT,
+        	PRIMARY KEY("id" AUTOINCREMENT)
+        );
+    '''],
+    "./server/admins.db": ['''
+        CREATE TABLE "admins" (
+    	    "username"	TEXT
+        );
+    
+    '''],
+    "./server/blacklist.db": ['''
+        CREATE TABLE "blacklist" (
+    	    "ip"	TEXT
+        );
+    '''],
 }
 
 for database in databases.keys():
@@ -69,7 +92,22 @@ for database in databases.keys():
 
     cur.close()
     db.commit()
+    db.close()
 
 
 # Create Genesis Room
 shutil.copyfile(path+"./room_template.db", path+"/rooms/0.db")
+
+db=sqlite3.connect(path+"./rooms/0.db")
+cur=db.cursor()
+cur.execute("INSERT INTO Name VALUES (\"Genesis\")")
+cur.close()
+db.commit()
+db.close()
+
+db=sqlite3.connect(path+"./rooms.db")
+cur=db.cursor()
+cur.execute('INSERT INTO Rooms (Name, Description, ID, Public) VALUES ("Genesis", "Founding Room", "0", 1)')
+cur.close()
+db.commit()
+db.close()
