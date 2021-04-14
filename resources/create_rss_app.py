@@ -18,7 +18,7 @@ def create(config_filename: str) -> None:
     global socketio
 
     # TODO Logging for seperate things such as global message chat, logging in, register, etc
-    logging.basicConfig(filename="logs.txt", level=logging.INFO)
+    logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename="../logs/rss_server.txt", level=logging.INFO)
 
     app = Flask(__name__)
     try:
