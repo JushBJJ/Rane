@@ -28,4 +28,8 @@ Rane is a chat client aimed to solve the issue of _______ _________ chat client 
   - [x] Commenting code.
   - [x] Removing unused imports and reordered imports
 - [ ] Database Logging
-- [ ] Encryption and security upgrades
+- [ ] Security
+  - [ ] Fix SQL injection vulnrelability.
+  - [ ] Encryption
+    - [ ] Database
+    - [ ] Websocket access
