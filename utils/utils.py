@@ -96,11 +96,11 @@ def repeat(event: str, return_type: Any, **kwargs) -> Any:
                     if retry >= 10:
                         break
 
-                    app.logger.info(f"[{event_get}] Retrying operation...")
+                    app.logger.info(f"[{event}] Retrying operation...")
                     time.sleep(2)
 
             elif returned == False:
-                app.logger.info(f"[{event_get}] Function failed. Trying again...")
+                app.logger.info(f"[{event}] Function failed. Trying again...")
                 returned = None
             else:
                 break

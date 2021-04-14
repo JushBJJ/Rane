@@ -27,7 +27,6 @@ Rane is a chat client aimed to solve the issue of _______ _________ chat client 
   - [x] Function argument types defined
   - [x] Commenting code.
   - [x] Removing unused imports and reordered imports
-- [ ] Database Logging
 - [ ] Security
   - [ ] Fix SQL injection vulnrelability.
   - [ ] Encryption
