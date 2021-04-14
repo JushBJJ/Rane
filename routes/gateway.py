@@ -1,5 +1,5 @@
-from flask import request
 from utils import utils, rss
+from flask import request
 
 
 def gateway() -> bool:

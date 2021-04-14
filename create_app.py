@@ -2,8 +2,8 @@ from flask import Flask
 from flask_restful import Api
 from flask_socketio import SocketIO
 
-import logging
 import socket
+import logging
 
 app = None
 api = None

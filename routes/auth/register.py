@@ -1,5 +1,5 @@
-from flask import request, session, redirect
 from utils import utils, user_utils, chat_utils
+from flask import request, session, redirect
 
 import hashlib
 

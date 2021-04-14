@@ -1,5 +1,5 @@
-from typing import Any
 from flask import request, session, render_template
+from typing import Any
 
 import routes.gateway as routes
 import create_app

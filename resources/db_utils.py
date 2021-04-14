@@ -1,9 +1,9 @@
+from sqlite3.dbapi2 import DatabaseError
+from flask import current_app as app
+from typing import Any
+
 import sqlite3
 import os
-
-from sqlite3.dbapi2 import DatabaseError
-from typing import Any, Tuple
-from flask import current_app as app
 
 # TODO Think about unit testing for this.
 

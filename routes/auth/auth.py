@@ -1,6 +1,5 @@
-from flask_restful import Resource
-from flask_restful import reqparse, Resource
-from utils import utils, rss
+from flask_restful import Resource, reqparse, Resource
+from utils import utils
 
 parser = reqparse.RequestParser()
 

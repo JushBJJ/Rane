@@ -1,5 +1,5 @@
-from typing import Text
 from flask import render_template
+from typing import Text
 
 
 def maintenance() -> Text:

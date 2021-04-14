@@ -1,14 +1,11 @@
 from typing import Any
-import flask
-from flask import request
 from flask import current_app as app
-from flask import session
-
 from utils import rss
+from flask import request, session, Flask
 
-import datetime
-import secrets
 import time
+import secrets
+import datetime
 
 
 def get_ip() -> str:
@@ -21,7 +18,7 @@ def get_session() -> session:
     return session
 
 
-def get_app() -> flask.Flask:
+def get_app() -> Flask:
     """Get current app."""
     return app
 

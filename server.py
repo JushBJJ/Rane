@@ -1,18 +1,16 @@
 """Main Website Server, requires resource server in order to run."""
-from flask import session, request
+from utils import room_utils, user_utils, rss, utils
 from routes.create_routes import create_routes
 from client import website_connection as wc
-
-from utils import room_utils, user_utils, rss, utils
+from flask import session, request
 from routes.auth import auth
 
 import create_app
-
-import time
-import base64
-import html
 import secrets
+import base64
 import atexit
+import time
+import html
 
 
 create_app.create("config.py")

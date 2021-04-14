@@ -1,6 +1,6 @@
-from typing import Any
 from flask import session, redirect, render_template
 from utils import room_utils, user_utils
+from typing import Any
 
 import routes.gateway as routes
 
