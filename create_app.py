@@ -28,6 +28,7 @@ def create(config_filename: str) -> None:
         host_ip = socket.gethostbyname(socket.gethostname())
         app.config["HOST"] = host_ip
         app.config["PORT"] = 5000
+        app.config["SECRET_KEY"] = "dadada"
 
     api = Api(app)
     socketio = SocketIO(app, always_connect=True)
