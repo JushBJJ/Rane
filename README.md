@@ -22,7 +22,7 @@ Rane is a chat client aimed to solve the issue of _______ _________ chat client 
 - [x] Fully Transition to SQL
   - [x] Register
 - [x] Create python script to generate database.
-- [ ] Reorganize and message repository code.
+- [x] Reorganize and message repository code.
   - [x] Reorganizing Functions
   - [x] Function argument types defined
   - [x] Commenting code.
