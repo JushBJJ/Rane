@@ -1,7 +1,6 @@
+from utils import rss, utils
 from datetime import datetime
 from utils.utils import get_session
-from shutil import copyfile
-from utils import rss, utils
 
 import json
 import time

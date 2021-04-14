@@ -2,7 +2,6 @@ from utils import rss
 from utils import utils
 
 import os
-import datetime
 
 # Rooms Dir
 rdir = os.path.abspath(__file__)+"/../../data/rooms/"

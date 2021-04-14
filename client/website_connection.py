@@ -1,6 +1,6 @@
-from flask import session, request
-from flask import current_app as app
 from utils import user_utils, chat_utils
+from flask import current_app as app
+from flask import session, request
 from datetime import datetime
 
 import routes.gateway as routes
@@ -12,8 +12,11 @@ def client_disconnected() -> None:
     """Clear tasks and forcefully disconnect user from the websocket client then monitor activity."""
     client_socket = create_app.socketio
 
-    client_socket.emit("clear tasks")
-    client_socket.emit("force disconnect")
+    try:
+        client_socket.emit("clear tasks")
+        client_socket.emit("force disconnect")
+    except KeyError:
+        print("Couldn't connect to website.")
 
     app.logger.info(f"[{request.remote_addr}]CLIENT DISCONNECTED")
     user_utils.monitor_activity(session["username"])

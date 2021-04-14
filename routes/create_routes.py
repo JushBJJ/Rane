@@ -1,8 +1,8 @@
+from routes.maintenance import maintenance
+from routes.auth.register import register
+from routes.auth.login import login
 from routes.root import root
 from routes.room import room
-from routes.maintenance import maintenance
-from routes.auth.login import login
-from routes.auth.register import register
 
 import create_app
 

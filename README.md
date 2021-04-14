@@ -8,14 +8,14 @@ Rane is a chat client aimed to solve the issue of _______ _________ chat client 
 
 ### Install Requirements
 
-    `pip install -r requirements.txt`
+    pip install -r requirements.txt
 
 ### Generate Database [/tools]
 
-    `python create_database`
+    python create_database
 
 ### Run Server [/]
-    `python run.py`
+    python run.py
 
 ## Roadmap
 
@@ -26,6 +26,6 @@ Rane is a chat client aimed to solve the issue of _______ _________ chat client 
   - [x] Reorganizing Functions
   - [x] Function argument types defined
   - [x] Commenting code.
-  - [ ] Removing unused imports
+  - [x] Removing unused imports and reordered imports
 - [ ] Database Logging
 - [ ] Encryption and security upgrades

@@ -1,12 +1,10 @@
-from flask import Flask
-from flask_socketio import SocketIO
-from typing import Any
 from client import resource_connection as rc
+from typing import Any
 
 import resources.create_rss_app as create_app
 import resources.db_utils as db_utils
-import shutil
 import sqlite3
+import shutil
 
 # Create app.
 create_app.create("resource_config.py")

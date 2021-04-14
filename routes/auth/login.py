@@ -1,7 +1,6 @@
 from flask import request, session, redirect, url_for
 from utils import utils, user_utils, chat_utils
 import hashlib
-import create_app
 
 
 def login():
