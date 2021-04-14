@@ -21,7 +21,7 @@ client_socket = create_app.socketio
 HOST = app.config["HOST"]
 PORT = app.config["PORT"]
 
-api.add_resource(auth.authorize, "/api/authorize")
+api.add_resource(auth.Authorize, "/api/authorize")
 
 
 def register_external_receivers() -> None:
