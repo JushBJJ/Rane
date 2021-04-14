@@ -1,7 +1,8 @@
 from flask import Flask
-from flask_restful import Api, Resource, reqparse
+from flask_restful import Api
 from flask_socketio import SocketIO
 import os
+import socket
 
 import logging
 
@@ -24,7 +25,7 @@ def create(config_filename: str) -> None:
         app.config.from_pyfile(f"{basedir}/{config_filename}")
         app.config.from_object("resources.resource_config.RSS_Development_Home")
     except FileNotFoundError:
-        app.config["HOST"] = "0.0.0.0"
+        app.config["HOST"] = socket.gethostbyname(socket.gethostname())
         app.config["PORT"] = "5001"
 
     api = Api(app)

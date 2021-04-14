@@ -12,18 +12,24 @@ import time
 
 
 def get_ip() -> str:
+    """Get connected user IP."""
     return request.remote_addr
 
 
 def get_session() -> session:
+    """Get current session."""
     return session
 
 
 def get_app() -> flask.Flask:
+    """Get current app."""
     return app
 
 
 def convert_to_html(message: str) -> str:
+    """Convert messages into html."""
+    # Split time
+    # TODO alternative to time in the message string.
     msgSplit = ("".join(message.split("["))).split("]")
     msgTime = msgSplit[0]
     content = "".join(msgSplit[1:])
@@ -34,21 +40,21 @@ def convert_to_html(message: str) -> str:
 
 def repeat(event: str, return_type: Any, **kwargs) -> Any:
     """
-    repeat For socketio functions
+    For socketio functions.
 
     Args:
         event (string): Server-side socket function.
         return_type (type): Type that should be returned.
-
-    Returns:
-        Any: Any Data, will return False if failed.
     """
     event_get = secrets.token_urlsafe()
 
     @rss.rss_socket.on(event_get)
     def event_func(data: Any) -> None:
+        """Socketio event."""
         nonlocal returned
         nonlocal run
+        nonlocal event
+
         returned = None
 
         if data == False:
@@ -72,15 +78,18 @@ def repeat(event: str, return_type: Any, **kwargs) -> Any:
         retry = 0
 
         while True:
+            # Loop until returned variable is not None or False.
             if returned == None:
                 returned = None
 
+                # Emit message to resource server.
                 if run:
                     rss.rss_socket.emit(event=event, data=kwargs["data"])
                     rss.rss_socket.sleep(0)
                     run = False
                     continue
 
+                # Retry every 30th second
                 b = datetime.datetime.now()
 
                 if(b.second % 30) == 0:

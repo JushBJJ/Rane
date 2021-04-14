@@ -1,3 +1,5 @@
+from socketio.exceptions import ConnectionRefusedError
+
 from utils import rss
 from flask import request, current_app
 

@@ -9,6 +9,7 @@ from flask import current_app as app
 
 
 def db_edit(filename: str, folder: str, function: Any) -> Any:
+    """Decorator function that automatically connects to the database."""
     def wrapper(*args, **kwargs):
         path = correct_path(folder, filename)
 
@@ -31,6 +32,7 @@ def db_edit(filename: str, folder: str, function: Any) -> Any:
 
 
 def correct_path(folder: str, filename: str) -> str:
+    """Corrects the local path of a filename specified."""
     data = os.path.dirname(os.path.abspath(__file__))+"/../data/"
     path = data+folder+"/"+filename
     path__ = data+folder
@@ -42,8 +44,9 @@ def correct_path(folder: str, filename: str) -> str:
 
 
 def db_insert(cursor: sqlite3.Cursor, table: str, columns: str, values: str, unique: bool = False) -> bool:
+    """Insert values into the table."""
     try:
-        # Check if value in table
+        # Check if value in table if unique is True.
         if unique:
             retrieve = db_retrieve(cursor, table, f"{columns}", f"{columns}={values}")
             if type(retrieve) == list:
@@ -70,6 +73,7 @@ def db_insert(cursor: sqlite3.Cursor, table: str, columns: str, values: str, uni
 
 
 def db_retrieve(cursor: sqlite3.Cursor, table: str, select: str, where: str) -> list:
+    """Get column values of a table."""
     if where == "":
         ret = cursor.execute(f"SELECT {select} FROM {table}")
     else:
@@ -83,11 +87,13 @@ def db_retrieve(cursor: sqlite3.Cursor, table: str, select: str, where: str) -> 
 
 
 def db_retrieve_all(cursor: sqlite3.Cursor, table: str) -> list:
+    """Get all values of a table."""
     ret = cursor.execute(f"SELECT * FROM {table}")
     return ret.fetchall()
 
 
 def db_update(cursor: sqlite3.Cursor, table: str, set_values: str, where: str) -> bool:
+    """Update values of a table."""
     try:
         cursor.execute(f"UPDATE {table} SET {set_values} WHERE {where}")
         return True
@@ -97,6 +103,7 @@ def db_update(cursor: sqlite3.Cursor, table: str, set_values: str, where: str) -
 
 
 def db_truncate(cursor: sqlite3.Cursor, table: str) -> bool:
+    """Truncate table."""
     try:
         cursor.execute(f"DELETE FROM {table}")
         return True
@@ -106,6 +113,7 @@ def db_truncate(cursor: sqlite3.Cursor, table: str) -> bool:
 
 
 def db_delete(cursor: sqlite3.Cursor, table: str, where: str) -> bool:
+    """Delete a specific value from the table."""
     try:
         cursor.execute(f"DELETE FROM {table} WHERE {where}")
         return True

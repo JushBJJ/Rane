@@ -9,8 +9,9 @@ app = create_app.app
 
 
 def root() -> Any:
+    """Root page."""
     if routes.gateway() == True:
-        app.logger.info(f"{request.remote_addr} connected to enter the server.")
+        app.logger.info(f"{request.remote_addr} banned user tried to connect to server.")
         return render_template("banned.html")
 
     session["anything"] = ""

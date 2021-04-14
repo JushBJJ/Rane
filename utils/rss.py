@@ -1,5 +1,6 @@
 import socketio as rss
 import asyncio
+import socket
 
 from flask import current_app as app
 # Connect to Resource server
@@ -8,9 +9,10 @@ loop = asyncio.get_event_loop()
 
 
 def connect() -> bool:
+    """Connect to resource server."""
     try:
         if not rss_socket.connected:
-            rss_socket.connect("http://192.168.1.10:5001/")
+            rss_socket.connect(socket.gethostbyname(socket.gethostname())+"5001")
             rss_socket.sleep(2)
         return True
     except Exception as e:
@@ -19,6 +21,7 @@ def connect() -> bool:
 
 
 def disconnect() -> bool:
+    """Disconnnect from resource server."""
     try:
         rss_socket.disconnect()
         return True
@@ -28,4 +31,5 @@ def disconnect() -> bool:
 
 
 def get_socket() -> rss.Client:
+    """Get client."""
     return rss_socket

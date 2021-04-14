@@ -7,6 +7,7 @@ parser = reqparse.RequestParser()
 
 class authorize(Resource):
     def post(self):
+        """Authorize user if username and password match."""
         parser.add_argument("username")
         parser.add_argument("password")
 

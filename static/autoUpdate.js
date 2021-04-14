@@ -40,7 +40,7 @@ function ping_important() {
 }
 
 function ping_very_important() {
-    new_task("get_comments", room_id)
+    new_task("get_messages", room_id)
 }
 
 function status() {
@@ -63,7 +63,7 @@ socket.on("recieve_online", function (data) {
     document.getElementById("current-online").innerHTML = data["online"];
 })
 
-socket.on("recieve_comments", function (data) {
+socket.on("recieve_messages", function (data) {
     if (data["room_id"] == room_id) {
         document.getElementById("messages").innerHTML = data["messages"];;
         autoscroll()

@@ -1,8 +1,9 @@
 from flask import Flask
-from flask_restful import Api, Resource, reqparse
+from flask_restful import Api
 from flask_socketio import SocketIO
 
 import logging
+import socket
 
 app = None
 api = None
@@ -10,6 +11,7 @@ socketio = None
 
 
 def create(config_filename: str) -> None:
+    """Create app by config."""
     global app
     global api
     global socketio
@@ -23,8 +25,9 @@ def create(config_filename: str) -> None:
         app.config.from_pyfile(config_filename)
         app.config.from_object("config.SERVER_Development_Home")
     except FileNotFoundError:
-        app.config["HOST"] = "0.0.0.0"
-        app.config["PORT"] = "5000"
+        host_ip = socket.gethostbyname(socket.gethostname())
+        app.config["HOST"] = host_ip
+        app.config["PORT"] = 5000
 
     api = Api(app)
     socketio = SocketIO(app, always_connect=True)
