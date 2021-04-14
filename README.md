@@ -17,6 +17,7 @@ Rane is a chat client aimed to solve the issue of _______ _________ chat client 
 ### Run Server [/]
     python run.py
 
+The server will be hosted in your localhost ip. (eg. http://192.168.1.10:5000)
 ## Roadmap
 
 - [x] Fully Transition to SQL
