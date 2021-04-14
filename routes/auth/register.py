@@ -5,6 +5,7 @@ import hashlib
 
 
 def register():
+    """Register user."""
     username = request.form["register-username"]
     password = hashlib.sha256(request.form["register-password"].encode()).hexdigest()
     confirm_password = hashlib.sha256(request.form["register-password-again"].encode()).hexdigest()
@@ -22,7 +23,7 @@ def register():
         "where": f"username=\"{username}\""
     }
 
-    # Check
+    # Check if user already exists
     ret = utils.repeat(
         event="retrieve table",
         data=data,
@@ -30,6 +31,7 @@ def register():
     )
 
     if not ret:
+        # Add user to database.
         utils.repeat(
             event="append table",
             data={

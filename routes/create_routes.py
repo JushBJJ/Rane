@@ -8,6 +8,7 @@ import create_app
 
 
 def create_routes() -> None:
+    """Create all page routes of the website."""
     app = create_app.app
 
     # Main Pages

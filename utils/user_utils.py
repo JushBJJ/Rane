@@ -8,6 +8,7 @@ import time
 
 
 def status(username: str, status: str) -> bool:
+    """Set the status of a user, including when they were last seen."""
     return utils.repeat(
         event="update table",
         data={
@@ -22,6 +23,8 @@ def status(username: str, status: str) -> bool:
 
 
 def get_online() -> int:
+    """Get the amount of users that are online."""
+    # TODO Get usernames that are online
     returned = utils.repeat(
         event="retrieve table",
         data={
@@ -37,7 +40,8 @@ def get_online() -> int:
     return len(returned)
 
 
-def online(num: int, room_id: str, silent: bool = False, testing: bool = False) -> bool:
+def online(num: int, room_id: int, silent: bool = False, testing: bool = False) -> bool:
+    """Set the value of whether the user is connected to the server or not."""
     # TODO Server message
     if not testing:
         session = get_session()
@@ -47,6 +51,7 @@ def online(num: int, room_id: str, silent: bool = False, testing: bool = False) 
     event = ""
     data = {}
 
+    # Set to Online
     if num == 1:
         event = "append table"
 
@@ -58,6 +63,8 @@ def online(num: int, room_id: str, silent: bool = False, testing: bool = False) 
             "values": f"\"{session['username']}\"",
             "unique": True
         }
+
+    # Set to Offline
     elif num == -1:
         event = "delete row"
 
@@ -78,6 +85,7 @@ def online(num: int, room_id: str, silent: bool = False, testing: bool = False) 
 
 
 def clear_online() -> bool:
+    """Truncate online users table."""
     return utils.repeat(
         event="truncate",
         return_type=bool,
@@ -90,6 +98,7 @@ def clear_online() -> bool:
 
 
 def get_account_info(username: str) -> list:
+    """Get a user's info excluding their password."""
     return utils.repeat(
         event="retrieve table",
         return_type=list,
@@ -104,10 +113,12 @@ def get_account_info(username: str) -> list:
 
 
 def convert_to_datetime(ctime: str) -> datetime:
+    """Convert ctime to datetime."""
     return datetime.strptime(ctime, "%c")
 
 
 def monitor_activity(username: str) -> None:
+    """Monitor whether the user disconnected for more than 5 seconds, then determine whether they're offline or not."""
     session = get_session()
 
     for _ in range(10):

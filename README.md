@@ -8,34 +8,24 @@ Rane is a chat client aimed to solve the issue of _______ _________ chat client 
 
 ### Install Requirements
 
-  `pip install -r requirements.txt`
+    `pip install -r requirements.txt`
 
 ### Generate Database [/tools]
 
-  `python create_database`
-
-### Change utils/rss.py IP connection
-
-   `rss_socket.connect("http://192.168.1.10:5001/")`
-
-   to
-
-   `rss_socket.connect("http://YOUR_IP_HOST_AND_PORT/")`
-
-    
+    `python create_database`
 
 ### Run Server [/]
-  `python run.py`
+    `python run.py`
 
 ## Roadmap
 
 - [x] Fully Transition to SQL
   - [x] Register
 - [x] Create python script to generate database.
-- [ ] Reorganize and comment repository code.
+- [ ] Reorganize and message repository code.
   - [x] Reorganizing Functions
   - [x] Function argument types defined
-  - [ ] Commenting/Documenting
+  - [x] Commenting code.
   - [ ] Removing unused imports
 - [ ] Database Logging
 - [ ] Encryption and security upgrades

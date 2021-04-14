@@ -1,19 +1,15 @@
+"""Main Website Server, requires resource server in order to run."""
 from flask import session, request
-from datetime import datetime
-from socketio.exceptions import ConnectionRefusedError
 from routes.create_routes import create_routes
 from client import website_connection as wc
 
-import requests
-from utils import room_utils, user_utils, chat_utils, rss, utils
+from utils import room_utils, user_utils, rss, utils
 from routes.auth import auth
 
 import create_app
 
 import time
 import base64
-import os
-import hashlib
 import html
 import secrets
 import atexit
@@ -31,6 +27,7 @@ api.add_resource(auth.authorize, "/api/authorize")
 
 
 def register_external_receivers() -> None:
+    """Register socket event handlers."""
     client_socket.on_event("disconnect", wc.client_disconnected)
     client_socket.on_event("connect", wc.client_connect)
     client_socket.on_event("connected", wc.connected)
@@ -40,16 +37,18 @@ def register_external_receivers() -> None:
 # Rooms Functions
 
 
-@ client_socket.on("create_room")
-def createRoom(args: dict) -> bool:
-    name: str = html.escape(args["name"])
-    desc: str = html.escape(args["desc"])
+@ client_socket.on("create room")
+def create_room(args: dict) -> bool:
+    """Create new room, public or private."""
+    name = html.escape(args["name"])
+    desc = html.escape(args["desc"])
     public = int(args["public"] == "Public")
     owner = args["owner"]
 
     owner_id = user_utils.get_account_info(owner)[4]
     new_room_id = base64.b64encode(str(secrets.randbits(128)).encode()).decode()
 
+    # Append new room info.
     ret = utils.repeat(
         event="append table",
         return_type=bool,
@@ -63,6 +62,7 @@ def createRoom(args: dict) -> bool:
         }
     )
 
+    # Create room database.
     returns = utils.repeat(
         event="create room",
         return_type=list,
@@ -79,11 +79,13 @@ def createRoom(args: dict) -> bool:
 
 @client_socket.on("get_rooms")
 def get_rooms(data: dict) -> None:
+    """Get all rooms if the user is whitelisted or room is public."""
     pong = data["pong"]
 
     rooms = room_utils.get_rooms()
     section = ""
 
+    # Create div blocks for each room.
     for room in rooms:
         section += f"""
         <div class = \"chatroom-side\" >
@@ -99,16 +101,20 @@ def get_rooms(data: dict) -> None:
 # Messages
 
 
-@client_socket.on("new comment")
-def get_new_comment(data: dict) -> None:
+@client_socket.on("new message")
+def get_new_message(data: dict) -> None:
+    """Get new message."""
+    # TODO For specific rooms.
     room_id = data["room_id"]
     message = data["message"]
 
+    # Receive 1 message directly to client.
     client_socket.emit("recieve_local_message", data)
 
 
-@client_socket.on("get_comments")
-def get_comments(data: dict) -> None:
+@client_socket.on("get_messages")
+def get_messages(data: dict) -> None:
+    """Get all messages of a room."""
     room_id = data["params"]
     pong = data["pong"]
 
@@ -118,8 +124,10 @@ def get_comments(data: dict) -> None:
     for message in messages["messages"]:
         newMessages += utils.convert_to_html(message)
 
-    client_socket.emit("recieve_comments", {"messages": newMessages, "room_id": room_id}, broadcast=True)
+    # Send all messages of the room to the client.
+    client_socket.emit("recieve_messages", {"messages": newMessages, "room_id": room_id}, broadcast=True)
 
+    # Scroll user down to the bottom.
     if session["chat"] != base64.b64encode(newMessages.encode()):
         session["chat"] = base64.b64encode(newMessages.encode())
         client_socket.emit("new_messages", {"room_id": room_id}, broadcast=True)
@@ -129,11 +137,15 @@ def get_comments(data: dict) -> None:
 
 @ client_socket.on("send")
 def send(message: str, room_id: int, author_id: int) -> None:
+    """Send new message to a room."""
+    # Prevent user from sending blank messages
     if message == "\n" or message[0] == " ":
         return
 
     user = session["special"]
     msg = f"[{time.asctime()}]{user}: "+html.escape(message)
+
+    # Append message to room database.
     utils.repeat(
         event="append message",
         return_type=bool,
@@ -149,6 +161,7 @@ def send(message: str, room_id: int, author_id: int) -> None:
         "room_id": room_id,
         "message": utils.convert_to_html(msg)
     }
+
     client_socket.emit("recieve_local_message", data, broadcast=True, include_self=True)
     client_socket.emit("new_messages", data, broadcast=True, include_self=True)
 
@@ -156,6 +169,7 @@ def send(message: str, room_id: int, author_id: int) -> None:
 # Get connections
 @ client_socket.on("get_online")
 def get_online(data: dict) -> None:
+    """Get all current connections."""
     pong = data["pong"]
 
     client_socket.emit("recieve_online", {"online": user_utils.get_online()})
@@ -165,16 +179,19 @@ def get_online(data: dict) -> None:
 
 
 def main() -> None:
+    """Start up server."""
     rss.connect()
 
     atexit.register(rss.disconnect)
     user_utils.clear_online()
+
     create_routes()
     register_external_receivers()
 
     app.logger.info(f"STARTED SERVER:\n\tHOST: {HOST}\n\tPORT: {PORT}")
     client_socket.run(app, host=HOST, port=PORT, debug=False)
     client_socket.stop()
+
     rss.disconnect()
 
 

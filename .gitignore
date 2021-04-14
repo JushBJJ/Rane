@@ -120,6 +120,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+bandit-env/
 
 # Spyder project settings
 .spyderproject

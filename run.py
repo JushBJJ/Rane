@@ -5,11 +5,12 @@ from multiprocessing import Process
 import threading
 import server
 import resources.resource_server as resource_server
-import eventlet
 
+import socketio
+import socket
 import time
 
-HOST = "192.168.1.10"
+HOST = socket.gethostbyname(socket.gethostname())
 PORT = 5002
 
 
@@ -44,30 +45,56 @@ client = SocketIO(app)
 RSS = RSSServer()
 Website = WebsiteServer()
 
-p1 = Process(target=resource_server.main, args=())
-p2 = Process(target=server.main, args=())
+p1 = None
+p2 = None
+
+
+@client.on("start website")
+def start_website():
+    global p1
+    global p2
+
+    p1 = Process(target=resource_server.main, args=())
+    p2 = Process(target=server.main, args=())
+
+    p1.start()
+    print("Started RSS Server.")
+    p2.start()
+    print("Started Website Server.")
 
 
 @client.on("close website")
 def close_website():
+    global p1
+    global p2
+
+    io = socketio.Client()
+    io.connect("http://192.168.1.10:5000")
+    time.sleep(3)
+    io.emit("rss maintenance", {})
+    time.sleep(3)
+    io.disconnect()
+
     print("Killing Servers...")
     p1.terminate()
     p2.terminate()
 
-    print("Killing client. You may not press ctrl+c")
-    client.stop()
-    print("Fully killed client.")
+    print("Killed servers, you may press ctrl+c to close running server.")
+
+
+@client.on("restart website")
+def restart_website():
+    global p1
+    global p2
+
+    print("Restarting website...")
+    close_website()
+
+    print("Closed website.")
+    start_website()
+    print("Started website.")
 
 
 if __name__ == "__main__":
-    print("Starting RSS Server.")
-    p1.start()
-    time.sleep(3)
-
-    print("Starting Website Server")
-    p2.start()
-
+    start_website()
     client.run(app, HOST, PORT)
-
-    p1.join()
-    p2.join()

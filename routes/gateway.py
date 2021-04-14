@@ -3,6 +3,7 @@ from utils import utils, rss
 
 
 def gateway() -> bool:
+    """Check whether the user is banned or not."""
     ip = request.remote_addr
 
     data = {

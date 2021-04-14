@@ -119,7 +119,7 @@
             document.getElementById("room-public").value="Public"
             document.getElementById("add_room").className="box box-close";
 
-            socket.emit("create_room", 
+            socket.emit("create room", 
                 {
                     "name": roomTitle, 
                     "desc": roomDesc,

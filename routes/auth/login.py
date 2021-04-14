@@ -5,9 +5,7 @@ import create_app
 
 
 def login():
-    app = create_app.app
-    app.logger.info("Going to room 0")
-
+    """Login user."""
     username = request.form["login-username"]
     password = hashlib.sha256(request.form["login-password"].encode()).hexdigest()
 
@@ -19,7 +17,7 @@ def login():
         "where": f"username=\"{username}\" and password=\"{password}\""
     }
 
-    # Check
+    # Check if user exists.
     ret = utils.repeat(
         event="retrieve table",
         data=data,
