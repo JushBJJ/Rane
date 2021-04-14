@@ -9,7 +9,6 @@ os.mkdir(path)
 os.mkdir(path+"/keys/")
 os.mkdir(path+"/rooms/")
 os.mkdir(path+"/server/")
-os.mkdir("../logs/")
 
 # Create Databases
 databases = {
