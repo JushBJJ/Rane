@@ -16,14 +16,16 @@ def room(room_id: str) -> Any:
     elif session["username"] == "":
         return redirect("/")
 
+    room_admins = dict(room_utils.get_room_info(room_id, "Admins", select="Username"))
+
     # Set jinja values.
     room_name = room_utils.get_room_name(room_id)
-    room_admin = session["username"] in room_utils.get_room_info(room_id, "Admins", where=f"Username=\'{session['username']}\'")
+    is_admin = session["username"] in list(room_admins.keys())
     user_id = user_utils.get_account_info(session["username"])[4]
 
     return render_template("chat.html",
                            room_id=str(room_id),
                            room_name=room_name,
                            username=session["username"],
-                           room_admin=room_admin,
+                           room_admin=is_admin,
                            user_id=user_id)
