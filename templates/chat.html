@@ -16,7 +16,7 @@
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.min.js"></script>
-    <!--<script src="https://kit.fontawesome.com/b44c4e81bc.js" crossorigin="anonymous"></script>-->
+    <script src="https://kit.fontawesome.com/b44c4e81bc.js" crossorigin="anonymous"></script>
 </head>
 <body onload="ping(); ping_important(); ping_very_important();">
     <!--Desktop View-->
@@ -87,6 +87,7 @@
         const socket=io();
         let room_id="{{room_id}}";
         let user_id="{{user_id}}";
+        let room_admin="{{room_admin}}"
 
         let imp_3=true;
         let imp_2=true;

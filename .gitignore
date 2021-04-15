@@ -2,6 +2,7 @@
 admin/
 data/rooms
 data/
+.vscode/
 config.py
 server.txt
 logs.txt
