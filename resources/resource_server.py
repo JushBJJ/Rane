@@ -177,9 +177,9 @@ def create_room(data: dict) -> None:
     emit = data["emit"]
 
     tables = {
-        "Admins": {
-            "columns": "Username, ID",
-            "values": f"\"{owner}\",\"{owner_id}\""
+        "Members": {
+            "columns": "ID, Username, \"Role\"",
+            "values": f"\"{owner_id}\", \"{owner}\",\"Room Owner\""
         },
         "Owners": {
             "columns": "Username, ID",

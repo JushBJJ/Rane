@@ -82,7 +82,7 @@ def db_retrieve(cursor: sqlite3.Cursor, table: str, select: str, where: str) -> 
         except sqlite3.OperationalError as e:
             app.logger.info(e)
             app.logger.info(f"SELECT {select} FROM {table} WHERE {where}")
-            raise e
+            return []
     return ret.fetchall()
 
 

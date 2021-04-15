@@ -13,9 +13,10 @@ os.mkdir(path+"/server/")
 # Create Databases
 databases = {
     "./room_template.db": ['''
-        CREATE TABLE "Admins" (
+        CREATE TABLE "Members" (
+        	"ID"	INTEGER UNIQUE,
         	"Username"	TEXT UNIQUE,
-        	"ID"	INTEGER UNIQUE
+        	"Role"	TEXT
         );''', '''
         CREATE TABLE "Blacklisted" (
         	"Username"	TEXT UNIQUE,
@@ -98,15 +99,15 @@ for database in databases.keys():
 # Create Genesis Room
 shutil.copyfile(path+"./room_template.db", path+"/rooms/0.db")
 
-db=sqlite3.connect(path+"./rooms/0.db")
-cur=db.cursor()
+db = sqlite3.connect(path+"./rooms/0.db")
+cur = db.cursor()
 cur.execute("INSERT INTO Name VALUES (\"Genesis\")")
 cur.close()
 db.commit()
 db.close()
 
-db=sqlite3.connect(path+"./rooms.db")
-cur=db.cursor()
+db = sqlite3.connect(path+"./rooms.db")
+cur = db.cursor()
 cur.execute('INSERT INTO Rooms (Name, Description, ID, Public) VALUES ("Genesis", "Founding Room", "0", 1)')
 cur.close()
 db.commit()
