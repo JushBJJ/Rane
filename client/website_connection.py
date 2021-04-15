@@ -5,26 +5,31 @@ from datetime import datetime
 
 import routes.gateway as routes
 import create_app
+import secrets
 import time
 
 
 def client_disconnected() -> None:
     """Clear tasks and forcefully disconnect user from the websocket client then monitor activity."""
     client_socket = create_app.socketio
+    username = session["username"]
+    client_ip = request.remote_addr
 
     try:
-        client_socket.emit("clear tasks")
         client_socket.emit("force disconnect")
-    except KeyError:
+    except Exception as e:
+        app.logger.info(e)
         print("Couldn't connect to website.")
 
-    app.logger.info(f"[{request.remote_addr}]CLIENT DISCONNECTED")
-    user_utils.monitor_activity(session["username"])
+    app.logger.info(f"[{client_ip}]CLIENT DISCONNECTED")
+    print(f"[{client_ip}]CLIENT DISCONNECTED")
+    user_utils.monitor_activity(username)
 
 
 def client_connect() -> None:
     """Log when client is connected to the server."""
     app.logger.info(f"[{request.remote_addr}]CLIENT CONNECTED")
+    print(f"[{request.remote_addr}]CLIENT CONNECTED")
 
 
 def connected(data: dict) -> None:
@@ -62,4 +67,9 @@ def client_maintenance(data: dict) -> None:
     """Switch all clients to maintenance mode."""
     client_socket = create_app.socketio
     app.logger.info("CLIENT RAISED MAINTENANCE MODE")
+    print("MAINTENANCE MODE ACTIVATED.")
+
+    app.config["SECRET_KEY"] = secrets.token_urlsafe(32)
+
     client_socket.emit("maintenance", {}, broadcast=True, include_self=True)
+    client_socket.emit("force disconnect", {}, include_self=True)

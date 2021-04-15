@@ -6,6 +6,6 @@ import time
 
 def test_autocolor():
     rss.connect()
-    ret = chat_utils.autocolor(testing=True)
+    ret = chat_utils.autocolor("0", testing=True)
     rss.disconnect()
     assert ret == "Jush(<span class=\'admin\'>ADMIN</span>)"

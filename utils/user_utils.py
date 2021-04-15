@@ -111,6 +111,56 @@ def get_account_info(username: str) -> list:
     )[0]
 
 
+def get_account_server_role(username: str) -> str:
+    """Get the user's server role."""
+    data = {
+        "table": "accounts",
+        "filename": "accounts",
+        "folder": "server",
+        "select": "username, \"server role\"",
+        "where": f"username=\"{username}\""
+    }
+
+    role = dict(utils.repeat(
+        event="retrieve table",
+        data=data,
+        return_type=list
+    ))
+
+    if username in role.keys():
+        if role[username] == None:
+            return ""
+        return role[username]
+
+    return ""
+
+
+def get_account_room_role(username: str, room_id: str) -> str:
+    """Get the user's assigned room role."""
+
+    if type(room_id) != str:
+        raise TypeError("Invalid type: "+str(room_id))
+
+    data = {
+        "table": "Members",
+        "filename": room_id,
+        "folder": "rooms",
+        "select": "Username, Role",
+        "where": f"username=\"{username}\""
+    }
+
+    role = dict(utils.repeat(
+        event="retrieve table",
+        data=data,
+        return_type=list
+    ))
+
+    if username in role.keys():
+        return role[username]
+
+    return "Member"
+
+
 def convert_to_datetime(ctime: str) -> datetime:
     """Convert ctime to datetime."""
     return datetime.strptime(ctime, "%c")

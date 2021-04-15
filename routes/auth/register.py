@@ -47,7 +47,7 @@ def register():
         session["username"] = username
 
         user_utils.online(1, 0)
-        chat_utils.autocolor()
+        chat_utils.autocolor("0")
         return redirect("/room/0")
 
     session["register_error"] = "Username already taken."

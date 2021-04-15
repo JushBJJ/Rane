@@ -1,5 +1,5 @@
 """Main Website Server, requires resource server in order to run."""
-from utils import room_utils, user_utils, rss, utils
+from utils import room_utils, user_utils, rss, utils, chat_utils
 from routes.create_routes import create_routes
 from client import website_connection as wc
 from flask import session, request
@@ -173,6 +173,15 @@ def get_online(data: dict) -> None:
     client_socket.emit("recieve_online", {"online": user_utils.get_online()})
     client_socket.emit(pong)
 
+
+@client_socket.on("recolor")
+def recolor(data) -> None:
+    pong = data["pong"]
+    room_id = data["params"]
+
+    chat_utils.autocolor(room_id)
+
+    client_socket.emit(pong)
 # Main
 
 

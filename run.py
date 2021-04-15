@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_socketio import SocketIO
 from multiprocessing import Process
-from socketio.exceptions import ConnectionRefusedError
+from socketio.exceptions import ConnectionError
 
 import server
 import threading
@@ -69,15 +69,16 @@ def close_website():
     global p1
     global p2
 
+    io = socketio.Client()
     try:
-        io = socketio.Client()
         io.connect("http://192.168.1.10:5000")
+    except ConnectionError:
+        print("Couldn't connect to server")
+    else:
         time.sleep(3)
         io.emit("rss maintenance", {})
         time.sleep(3)
         io.disconnect()
-    except ConnectionRefusedError:
-        print("Couldn't connect to server")
 
     print("Killing Servers...")
     p1.terminate()

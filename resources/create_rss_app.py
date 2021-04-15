@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restful import Api
 from flask_socketio import SocketIO
+from logging.handlers import SocketHandler
 import os
 import socket
 
@@ -18,7 +19,10 @@ def create(config_filename: str) -> None:
     global socketio
 
     # TODO Logging for seperate things such as global message chat, logging in, register, etc
-    logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename="../logs/rss_server.txt", level=logging.INFO)
+    log = logging.basicConfig(format='%(asctime)s %(message)s',
+                              datefmt='%m/%d/%Y %I:%M:%S %p',
+                              filename="../logs/rss_server.txt",
+                              level=logging.INFO)
 
     app = Flask(__name__)
     try:
@@ -30,4 +34,4 @@ def create(config_filename: str) -> None:
         app.config["SECRET_KEY"] = "dadada"
 
     api = Api(app)
-    socketio = SocketIO(app, always_connect=True)
+    socketio = SocketIO(app, always_connect=True, logger=True)

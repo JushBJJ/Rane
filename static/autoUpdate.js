@@ -6,6 +6,7 @@ function move_room(new_room_id, new_room_name) {
     document.getElementById("room_span_name").innerHTML = new_room_name;
     document.getElementById("messages").innerHTML="Loading..."
     room_id = new_room_id;
+    new_task("recolor", room_id)
     ping_very_important()
 }
 
@@ -102,7 +103,8 @@ socket.on("force", function (data) {
     socket.emit(data["name"], data["params"])
 })
 
-socket.on("force disconnect", function(data){
+socket.on("force disconnect", function (data) {
+    console.log("SERVER INITIATED FORCE DISCONNECT.")
     socket.disconnect()
     window.location="/";
 })

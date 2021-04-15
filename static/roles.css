@@ -1,0 +1,23 @@
+.test_account{
+    color: green;
+}
+
+.server{
+    color: lightblue;
+}
+
+.rane_founder{
+    color: yellow;
+}
+
+.room_admin{
+    color: cyan;
+}
+
+.room_owner{
+    color: red;
+}
+
+.room_member{
+    color: white;
+}
