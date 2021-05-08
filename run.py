@@ -5,27 +5,13 @@ from socketio.exceptions import ConnectionError
 
 import server
 import threading
-import resources.resource_server as resource_server
 
 import time
 import socket
 import socketio
 
 HOST = socket.gethostbyname(socket.gethostname())
-PORT = 5002
-
-
-class RSSServer(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-
-    def run(self):
-        print("Starting RSS Server")
-        resource_server.main()
-        print("Stopped RSS Server")
-
-    def kill(self):
-        self.kill()
+PORT = 5001
 
 
 class WebsiteServer(threading.Thread):
@@ -43,31 +29,24 @@ class WebsiteServer(threading.Thread):
 
 app = Flask(__name__)
 client = SocketIO(app)
-RSS = RSSServer()
 Website = WebsiteServer()
 
 p1 = None
-p2 = None
 
 
 @client.on("start website")
 def start_website():
     global p1
-    global p2
 
-    p1 = Process(target=resource_server.main, args=())
-    p2 = Process(target=server.main, args=())
+    p1 = Process(target=server.main, args=())
 
     p1.start()
-    print("Started RSS Server.")
-    p2.start()
-    print("Started Website Server.")
+    print("Started Server.")
 
 
 @client.on("close website")
 def close_website():
     global p1
-    global p2
 
     io = socketio.Client()
     try:
@@ -82,7 +61,6 @@ def close_website():
 
     print("Killing Servers...")
     p1.terminate()
-    p2.terminate()
 
     print("Killed servers, you may press ctrl+c to close running server.")
 
@@ -90,7 +68,6 @@ def close_website():
 @client.on("restart website")
 def restart_website():
     global p1
-    global p2
 
     print("Restarting website...")
     close_website()

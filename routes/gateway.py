@@ -14,7 +14,7 @@ def gateway() -> bool:
         "where": f"ip=\"{ip}\""
     }
 
-    is_blacklisted = utils.repeat(
+    is_blacklisted = utils.call_db(
         function=rss.rss_socket.emit,
         event="retrieve table",
         data=data,

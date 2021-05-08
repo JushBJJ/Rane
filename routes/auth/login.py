@@ -17,7 +17,7 @@ def login():
     }
 
     # Check if user exists.
-    ret = utils.repeat(
+    ret = utils.call_db(
         event="retrieve table",
         data=data,
         return_type=list
