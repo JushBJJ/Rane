@@ -18,11 +18,9 @@ def create(config_filename: str) -> None:
     global socketio
 
     # TODO Logging for seperate things such as global message chat, logging in, register, etc
-    handler = SocketHandler("192.168.1.10", 19996)
 
     logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename="./logs/website_log.txt", level=logging.INFO)
     app = Flask(__name__)
-    app.logger.addHandler(handler)
 
     try:
         app.config.from_pyfile(config_filename)
