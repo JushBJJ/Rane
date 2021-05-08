@@ -71,7 +71,7 @@ def close_website():
 
     io = socketio.Client()
     try:
-        io.connect("http://192.168.1.10:5000")
+        io.connect(HOST)
     except ConnectionError:
         print("Couldn't connect to server")
     else:
