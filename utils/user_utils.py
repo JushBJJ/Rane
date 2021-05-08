@@ -8,7 +8,7 @@ import time
 
 def status(username: str, status: str) -> bool:
     """Set the status of a user, including when they were last seen."""
-    return utils.repeat(
+    return utils.call_db(
         event="update table",
         data={
             "filename": "accounts",
@@ -24,7 +24,7 @@ def status(username: str, status: str) -> bool:
 def get_online() -> int:
     """Get the amount of users that are online."""
     # TODO Get usernames that are online
-    returned = utils.repeat(
+    returned = utils.call_db(
         event="retrieve table",
         data={
             "filename": "server_info",
@@ -74,7 +74,7 @@ def online(num: int, room_id: int, silent: bool = False, testing: bool = False) 
             "where": f"username=\"{session['username']}\"",
         }
 
-    returned = utils.repeat(
+    returned = utils.call_db(
         event=event,
         data=data,
         return_type=bool
@@ -85,7 +85,7 @@ def online(num: int, room_id: int, silent: bool = False, testing: bool = False) 
 
 def clear_online() -> bool:
     """Truncate online users table."""
-    return utils.repeat(
+    return utils.call_db(
         event="truncate",
         return_type=bool,
         data={
@@ -98,7 +98,7 @@ def clear_online() -> bool:
 
 def get_account_info(username: str) -> list:
     """Get a user's info excluding their password."""
-    return utils.repeat(
+    return utils.call_db(
         event="retrieve table",
         return_type=list,
         data={
@@ -121,7 +121,7 @@ def get_account_server_role(username: str) -> str:
         "where": f"username=\"{username}\""
     }
 
-    role = dict(utils.repeat(
+    role = dict(utils.call_db(
         event="retrieve table",
         data=data,
         return_type=list
@@ -149,7 +149,7 @@ def get_account_room_role(username: str, room_id: str) -> str:
         "where": f"username=\"{username}\""
     }
 
-    role = dict(utils.repeat(
+    role = dict(utils.call_db(
         event="retrieve table",
         data=data,
         return_type=list

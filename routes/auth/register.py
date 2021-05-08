@@ -24,7 +24,7 @@ def register():
     }
 
     # Check if user already exists
-    ret = utils.repeat(
+    ret = utils.call_db(
         event="retrieve table",
         data=data,
         return_type=list
@@ -32,7 +32,7 @@ def register():
 
     if not ret:
         # Add user to database.
-        utils.repeat(
+        utils.call_db(
             event="append table",
             data={
                 "filename": "accounts",

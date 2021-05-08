@@ -20,7 +20,7 @@ def list_rooms() -> list:
 
 def get_room_messages(room_id: str) -> dict:
     """Get every message from a room."""
-    ret = utils.repeat(
+    ret = utils.call_db(
         event="retrieve messages",
         return_type=dict,
         data={
@@ -39,7 +39,7 @@ def get_room_info(room_id: str, table: str, select: str = "*", where: str = "") 
         "where": where
     }
 
-    room_info = utils.repeat(
+    room_info = utils.call_db(
         function=rss.rss_socket.emit,
         event="retrieve room info",
         data=data,
@@ -59,7 +59,7 @@ def set_room_info(room_id: str, table: str, where: str, value: str) -> bool:
         "where": where
     }
 
-    success = utils.repeat(
+    success = utils.call_db(
         event="update table",
         data=data,
         return_type=bool
@@ -70,12 +70,13 @@ def set_room_info(room_id: str, table: str, where: str, value: str) -> bool:
 def get_room_name(room_id: str) -> str:
     """Get room name."""
     ret = get_room_info(room_id=str(room_id), table="Name", select="Name")
+    print(ret)
     return ret[0][0]
 
 
 def get_rooms() -> list:
     """Get a list of rooms register in the rooms database."""
-    ret = utils.repeat(
+    ret = utils.call_db(
         event="retrieve table",
         return_type=list,
         data={

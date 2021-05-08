@@ -2,8 +2,10 @@ from typing import Any
 from flask import current_app as app
 from utils import rss
 from flask import request, session, Flask
+from resources import db
 
 import time
+import inspect
 import secrets
 import datetime
 
@@ -35,81 +37,38 @@ def convert_to_html(message: str) -> str:
     return newMessage
 
 
-def repeat(event: str, return_type: Any, **kwargs) -> Any:
+def call_db(event: str, return_type: Any, **kwargs) -> Any:
     """
-    For socketio functions.
+    Call functions from resources/db.py
 
     Args:
-        event (string): Server-side socket function.
-        return_type (type): Type that should be returned.
+        event (str): The function to be called.
+        return_type (Any): Return type.
     """
-    event_get = secrets.token_urlsafe()
 
-    @rss.rss_socket.on(event_get)
-    def event_func(data: Any) -> None:
-        """Socketio event."""
-        nonlocal returned
-        nonlocal run
-        nonlocal event
+    # TODO (Possibly try to change every line of code containing a space from other files to underscore)
 
-        returned = None
+    # Replace " " with "_"
+    event = "".join("_"+s for s in event.split())[1:]
 
-        if data == False:
-            app.logger.info(f"[{event}] Operation failed. Retrying in 5 seconds...")
-            app.logger.info(f"[{event}] Operation data: {data}")
-            run = False
-            rss.rss_socket.sleep(5)
-            run = True
-        elif type(data) == return_type:
-            returned = data
-        else:
-            app.logger.info(f"[{event}] Wrong type returned: {type(data)}, expected {return_type}.")
-            app.logger.info(f"[{event}] Operation data: {data}")
+    # Find function (Quick bi-directional find)
+    functions = inspect.getmembers(db, inspect.isfunction)
 
-    def wrapper() -> Any:
-        nonlocal returned
-        nonlocal run
-        returned = None
+    back = 0
+    front = len(functions)-1
 
-        run = True
-        retry = 0
+    function = None
 
-        while True:
-            # Loop until returned variable is not None or False.
-            if returned == None:
-                returned = None
+    for _ in range(front):
+        if functions[front][0] == event:
+            function = functions[front][1]
+            break
+        elif functions[back][0] == event:
+            function = functions[back][1]
+            break
 
-                # Emit message to resource server.
-                if run:
-                    rss.rss_socket.emit(event=event, data=kwargs["data"])
-                    rss.rss_socket.sleep(0)
-                    run = False
-                    continue
+        front -= 1
+        back += 1
 
-                # Retry every 30th second
-                b = datetime.datetime.now()
-
-                if(b.second % 30) == 0:
-                    run = True
-                    retry += 1
-
-                    if retry >= 10:
-                        break
-
-                    app.logger.info(f"[{event}] Retrying operation...")
-                    time.sleep(2)
-
-            elif returned == False:
-                app.logger.info(f"[{event}] Function failed. Trying again...")
-                returned = None
-            else:
-                break
-
-        ret = returned
-        returned = None
-        return ret
-
-    kwargs["data"]["emit"] = event_get
-    returned = None
-    run = True
-    return wrapper()
+    # Call function
+    return False if function == None else function(kwargs["data"])

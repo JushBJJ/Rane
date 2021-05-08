@@ -47,7 +47,7 @@ def create_room(args: dict) -> bool:
     new_room_id = base64.b64encode(str(secrets.randbits(128)).encode()).decode()
 
     # Append new room info.
-    ret = utils.repeat(
+    ret = utils.call_db(
         event="append table",
         return_type=bool,
         data={
@@ -61,7 +61,7 @@ def create_room(args: dict) -> bool:
     )
 
     # Create room database.
-    returns = utils.repeat(
+    returns = utils.call_db(
         event="create room",
         return_type=list,
         data={
@@ -93,7 +93,7 @@ def get_rooms(data: dict) -> None:
             </a>
         </div>"""
 
-    client_socket.emit("recieve_rooms", {"rooms": section})
+    client_socket.emit("recieve_rooms", {"rooms": section}, broadcast=True, include_self=True)
     client_socket.emit(pong)
 
 # Messages
@@ -119,16 +119,16 @@ def get_messages(data: dict) -> None:
     messages = room_utils.get_room_messages(room_id)
     newMessages = ""
 
-    for message in messages["messages"]:
+    for message in messages:
         newMessages += utils.convert_to_html(message)
 
     # Send all messages of the room to the client.
-    client_socket.emit("recieve_messages", {"messages": newMessages, "room_id": room_id}, broadcast=True)
+    client_socket.emit("recieve_messages", {"messages": newMessages, "room_id": room_id}, broadcast=True, include_self=True)
 
     # Scroll user down to the bottom.
     if session["chat"] != base64.b64encode(newMessages.encode()):
         session["chat"] = base64.b64encode(newMessages.encode())
-        client_socket.emit("new_messages", {"room_id": room_id}, broadcast=True)
+        client_socket.emit("new_messages", {"room_id": room_id}, broadcast=True, include_self=True)
 
     client_socket.emit(pong)
 
@@ -144,7 +144,7 @@ def send(message: str, room_id: int, author_id: int) -> None:
     msg = f"[{time.asctime()}]{user}: "+html.escape(message)
 
     # Append message to room database.
-    utils.repeat(
+    utils.call_db(
         event="append message",
         return_type=bool,
         data={
@@ -170,7 +170,7 @@ def get_online(data: dict) -> None:
     """Get all current connections."""
     pong = data["pong"]
 
-    client_socket.emit("recieve_online", {"online": user_utils.get_online()})
+    client_socket.emit("recieve_online", {"online": user_utils.get_online()}, broadcast=True, include_self=True)
     client_socket.emit(pong)
 
 

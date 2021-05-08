@@ -6,7 +6,6 @@ data/
 config.py
 server.txt
 logs.txt
-resources/resource_config.py
 
 
 
