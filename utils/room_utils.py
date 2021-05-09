@@ -70,7 +70,6 @@ def set_room_info(room_id: str, table: str, where: str, value: str) -> bool:
 def get_room_name(room_id: str) -> str:
     """Get room name."""
     ret = get_room_info(room_id=str(room_id), table="Name", select="Name")
-    print(ret)
     return ret[0][0]
 
 
