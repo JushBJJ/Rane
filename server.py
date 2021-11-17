@@ -1,17 +1,17 @@
-"""Main Website Server, requires resource server in order to run."""
+"""Main Website Server"""
 from utils import room_utils, user_utils, rss, utils, chat_utils
 from routes.create_routes import create_routes
 from client import website_connection as wc
-from flask import session, request
+from flask import session, request, jsonify
 from routes.auth import auth
 
 import create_app
+import hashlib
 import secrets
 import base64
-import atexit
 import time
 import html
-
+import os
 
 create_app.create("config.py")
 
@@ -34,14 +34,17 @@ def register_external_receivers() -> None:
 # Client-side
 # Rooms Functions
 
+# TODO
 
-@ client_socket.on("create room")
-def create_room(args: dict) -> bool:
+
+@app.route("/create_room", methods=["POST"])
+def create_room():
     """Create new room, public or private."""
-    name = html.escape(args["name"])
-    desc = html.escape(args["desc"])
-    public = int(args["public"] == "Public")
-    owner = args["owner"]
+    name = html.escape(request.form["name"])
+    desc = html.escape(request.form["description"])
+    password = html.escape(request.form["password"])
+    public = int(request.form["public"] == "Public")
+    owner = session["username"]
 
     owner_id = user_utils.get_account_info(owner)[4]
     new_room_id = base64.b64encode(str(secrets.randbits(128)).encode()).decode()
@@ -72,26 +75,35 @@ def create_room(args: dict) -> bool:
         }
     )
 
-    return ret and all(r == True for r in returns)
+    return jsonify({"success": ret and all(r == True for r in returns)})
 
 
-@client_socket.on("get_rooms")
+@ client_socket.on("get_rooms")
 def get_rooms(data: dict) -> None:
     """Get all rooms if the user is whitelisted or room is public."""
     pong = data["pong"]
 
+    # user_utils.get_user_rooms(session["username"])
+
     rooms = room_utils.get_rooms()
     section = ""
+
+    # room_utils.get_user_rooms(session["username"])
 
     # Create div blocks for each room.
     for room in rooms:
         section += f"""
-        <div class = \"chatroom-side\" >
-            <a class=\"room-link\" onclick=\'move_room(\"{room[2]}\",\"{room[0]}\")\'>
-                <p class = \"chatroom-title\" > {room[0]} </p> <i> 
-                <p class = \"chatroom-description\">{room[1]}</p></i>
+        <div class="h-auto pb-4">
+            <a class="block" onclick=\'move_room(\"{room[2]}\",\"{room[0]}\")\'>
+                <div class="card rounded-xl has-background-black p-2.5 room">
+                    <div class="media-content">
+                        <p class="title is-4 has-text-centered">{room[0]}</p>
+                        <p class="subtitle is-5 has-text-centered"><i>{room[1]}</i></p>
+                    </div>
+                </div>
             </a>
-        </div>"""
+        </div>
+        """
 
     client_socket.emit("recieve_rooms", {"rooms": section}, broadcast=True, include_self=True)
     client_socket.emit(pong)
@@ -99,7 +111,7 @@ def get_rooms(data: dict) -> None:
 # Messages
 
 
-@client_socket.on("new message")
+@ client_socket.on("new message")
 def get_new_message(data: dict) -> None:
     """Get new message."""
     # TODO For specific rooms.
@@ -110,17 +122,23 @@ def get_new_message(data: dict) -> None:
     client_socket.emit("recieve_local_message", data)
 
 
-@client_socket.on("get_messages")
+@ client_socket.on("get_messages")
 def get_messages(data: dict) -> None:
     """Get all messages of a room."""
     room_id = data["params"]
     pong = data["pong"]
 
-    messages = room_utils.get_room_messages(room_id)
+    messages, medias = room_utils.get_room_messages(room_id)
     newMessages = ""
 
-    for message in messages:
-        newMessages += utils.convert_to_html(message)
+    try:
+        for message, media in zip(messages, medias):
+            media = utils.convert_media_to_html(media)
+            timestamp, message = utils.convert_to_html(message, room_id, session["username"])
+
+            newMessages += timestamp+message+media
+    except ValueError:
+        return  # No need to process anything, there aren't any messages.
 
     # Send all messages of the room to the client.
     client_socket.emit("recieve_messages", {"messages": newMessages, "room_id": room_id}, broadcast=True, include_self=True)
@@ -133,14 +151,30 @@ def get_messages(data: dict) -> None:
     client_socket.emit(pong)
 
 
-@ client_socket.on("send")
-def send(message: str, room_id: int, author_id: int) -> None:
+@ app.route("/send", methods=["POST"])
+def send():
     """Send new message to a room."""
-    # Prevent user from sending blank messages
-    if message == "\n" or message[0] == " ":
-        return
+    files = request.files
+    message = request.form["message"]
+    room_id = request.form["room_id"]
+    author_id = request.form["user_id"]
 
-    user = session["special"]
+    message = message.replace("\n", "")
+
+    # return jsonify({}) if the length of files is 0 or if the message is just a space, invalid ascii or just nothing
+    if len(files) == 0 and (message.isspace() or not message.isascii() or message == "\n" or message == ""):
+        return jsonify({})
+
+    path = ""
+    try:
+        media = files["file"]
+        path = os.path.join(app.config["uploadFolder"], media.filename)
+        media.save(path)
+        path = "/static/uploads/"+media.filename
+    except Exception as e:
+        app.logger.info(f"Exception when uploading file: {e}")
+
+    user = session["username"]
     msg = f"[{time.asctime()}]{user}: "+html.escape(message)
 
     # Append message to room database.
@@ -151,20 +185,60 @@ def send(message: str, room_id: int, author_id: int) -> None:
             "room_id": room_id,
             "author_id": author_id,
             "author_ip": request.remote_addr,
-            "message": msg
+            "message": msg,
+            "media": path
         }
     )
 
+    media = utils.convert_media_to_html(path)
+    timestamp, msg = utils.convert_to_html(msg, room_id, session["username"])
+    message = timestamp+msg+media
+
     data = {
         "room_id": room_id,
-        "message": utils.convert_to_html(msg)
+        "message": message
     }
 
     client_socket.emit("recieve_local_message", data, broadcast=True, include_self=True)
     client_socket.emit("new_messages", data, broadcast=True, include_self=True)
+    return jsonify({})
 
+
+@ app.route("/change_password", methods=["POST"])
+def change_password():
+    """Change the password of a user."""
+    old_password = hashlib.sha256(request.form["old_password"].encode()).hexdigest()
+    new_password = hashlib.sha256(request.form["new_password"].encode()).hexdigest()
+
+    user = session["username"]
+    if not utils.check_password(user, old_password):
+        return jsonify({"success": False, "message": "Wrong password."})
+
+    utils.change_password(user, new_password)
+    return jsonify({"success": True, "message": "Password changed."})
+
+# Change username, similar to change_password
+
+
+@ app.route("/change_username", methods=["POST"])
+def change_username():
+    """Change the username of a user."""
+    old_username = session["username"]
+    new_username = request.form["new_username"]
+
+    if new_username == old_username:
+        return jsonify({"success": False, "message": "New username is the same as the old username."})
+    elif utils.check_username(new_username):
+        return jsonify({"success": False, "message": "Username already exists."})
+
+    utils.change_username(old_username, new_username)
+    session["username"] = new_username
+    time.sleep(1)
+    return jsonify({"success": True, "message": "Username changed.", "username": new_username})
 
 # Get connections
+
+
 @ client_socket.on("get_online")
 def get_online(data: dict) -> None:
     """Get all current connections."""
@@ -174,22 +248,18 @@ def get_online(data: dict) -> None:
     client_socket.emit(pong)
 
 
-@client_socket.on("recolor")
+@ client_socket.on("recolor")
 def recolor(data) -> None:
     pong = data["pong"]
     room_id = data["params"]
 
     chat_utils.autocolor(room_id)
-
     client_socket.emit(pong)
 # Main
 
 
 def main() -> None:
     """Start up server."""
-    rss.connect()
-
-    atexit.register(rss.disconnect)
     user_utils.clear_online()
 
     create_routes()

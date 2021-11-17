@@ -8,6 +8,20 @@ import time
 
 def status(username: str, status: str) -> bool:
     """Set the status of a user, including when they were last seen."""
+
+    if status == "Left":
+        # TODO: Remove from online table
+        utils.call_db(
+            event="delete row",
+            data={
+                "filename": "server_info",
+                "folder": ".",
+                "table": "online",
+                "where": f"username={username}"
+            },
+            return_type=bool
+        )
+
     return utils.call_db(
         event="update table",
         data={
@@ -24,6 +38,9 @@ def status(username: str, status: str) -> bool:
 def get_online() -> int:
     """Get the amount of users that are online."""
     # TODO Get usernames that are online
+
+    check_online()
+
     returned = utils.call_db(
         event="retrieve table",
         data={
@@ -49,7 +66,6 @@ def online(num: int, room_id: int, silent: bool = False, testing: bool = False) 
 
     event = ""
     data = {}
-
     # Set to Online
     if num == 1:
         event = "append table"
@@ -178,3 +194,84 @@ def monitor_activity(username: str) -> None:
             online(-1, session["room_id"])
         rss.rss_socket.sleep(1)
         time.sleep(1)
+
+
+def check_online():
+    """Check if all users in server_info in table online are last seen 2 minutes ago"""
+    session = get_session()
+    online_users = utils.call_db(
+        event="retrieve table",
+        data={
+            "filename": "server_info",
+            "folder": ".",
+            "table": "online",
+            "select": "username",
+            "where": ""
+        },
+        return_type=list
+    )
+
+    accounts = utils.call_db(
+        event="retrieve table",
+        data={
+            "filename": "accounts",
+            "folder": "server",
+            "table": "accounts",
+            "select": "username",
+            "where": ""
+        },
+        return_type=list
+    )
+
+    accounts = list(map(lambda x: x[0], accounts))
+
+    # Remove user if they don't exist
+    for user in online_users:
+        if user[0] not in accounts:
+            # Remove from database
+            utils.call_db(
+                event="delete row",
+                data={
+                    "filename": "server_info",
+                    "folder": ".",
+                    "table": "online",
+                    "where": f"username=\"{user[0]}\""
+                },
+                return_type=bool
+            )
+
+        else:
+            # Check if they're online for the last 2 minutes, at the same date and hour
+            # Example of get_account_info output: ('Jush', '192.168.1.15', 'Joined', 'Fri Oct 22 09:26:07 2021', 1, None)
+            info = get_account_info(user[0])
+
+            time_now = datetime.now()
+            user_seen = convert_to_datetime(info[3])
+            check = ["year", "month", "day", "hour", "minute"]
+
+            for i in check:
+                if i == "minute":
+                    if (time_now.minute - user_seen.minute) > 2:
+                        status(user[0], "Left")
+                        break
+                elif getattr(time_now, i) != getattr(user_seen, i):
+                    status(user[0], "Left")
+                    break
+
+
+def get_user_rooms(username: str) -> list:
+    """Get a user's rooms."""
+    rooms = utils.call_db(
+        event="retrieve table",
+        data={
+            "filename": "accounts",
+            "folder": "server",
+            "table": "accounts",
+            "select": "rooms",
+            "where": f"Username=\"{username}\""
+        },
+        return_type=str
+    )[0][0]
+
+    rooms = json.loads(rooms)["rooms"]
+    return rooms

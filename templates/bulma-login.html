@@ -17,40 +17,37 @@
         <div class="column is-one-quarter">
             <div class="box has-background-black">
                 <h4 class="title is-4 has-text-centered">Login</h4>
-                <span class="subtitle is-6 has-text-danger">{{login_error}}</span>
                 <label class="label">Username</label>
-                <input id="username" class="input has-background-black is-outlined has-text-white" placeholder="Username">
+                <input class="input has-background-black is-outlined has-text-white" placeholder="Username">
                 <br><br>
                 <label class="label">Password</label>
-                <input id="password" type="password" class="input has-background-black is-outlined has-text-white" placeholder="Password">
+                <input class="input has-background-black is-outlined has-text-white" placeholder="Password">
                 <br><br>
                 <div class="container has-text-centered">
-                    <button onclick="submit(`login`)" class="button is-outlined">Submit</button>
+                    <button class="button is-outlined">Submit</button>
                 </div>
+                
             </div>
         </div>
         <div class="column is-one-quarter is-offset-1">
             <div class="box has-background-black">
                 <h4 class="title is-4 has-text-centered">Register</h4>
-                <span class="subtitle is-6 has-text-danger">{{register_error}}</span>
                 <label class="label">Username</label>
-                <input id="reg-username" class="input has-background-black is-outlined has-text-white" placeholder="Username">
+                <input class="input has-background-black is-outlined has-text-white" placeholder="Username">
                 <br><br>
                 <label class="label">Password</label>
-                <input id="reg-password" type="password" class="input has-background-black is-outlined has-text-white" placeholder="Password">
+                <input class="input has-background-black is-outlined has-text-white" placeholder="Password">
                 <br><br>
                 <label class="label">Repeat Password</label>
-                <input id="reg-repeat-password" type="password" class="input has-background-black is-outlined has-text-white" placeholder="Repeat Password">
+                <input class="input has-background-black is-outlined has-text-white" placeholder="Repeat Password">
                 <br><br>
                 <div class="container has-text-centered">
-                    <button onclick="submit(`register`)" class="button is-outlined">Submit</button>
+                    <button class="button is-outlined">Submit</button>
                 </div>
             </div>
         </div>
     </div>
-    <form class="is-hidden" id="dummy"></form>
     <i class="fa fa-angle-down" style="display: block; text-align: center; font-size: 3em;"></i>
-    <br>
     <br>
     <br>
     <h3 class="title is-3 has-text-centered">What is Rane?</h3>
@@ -63,37 +60,5 @@
         <br>
         If you have found an issue, you can <a class="has-text-align" href="https://github.com/JushBJJ/Rane/issues">raise an issue</a> too.
     </h4>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script>
-        function submit(type){
-            form_data=new FormData($("#dummy")[0]);
-            if(type=="login"){
-                username=$("#username")[0].value;
-                password=$("#password")[0].value;
-                
-                form_data.append("username", username);
-                form_data.append("password", password);
-
-                data={"username": username, "password": password}
-            }
-            else if(type=="register"){
-                username=$("#reg-username")[0].value;
-                password=$("#reg-password")[0].value;
-                password_again=$("#reg-repeat-password")[0].value;
-
-                data={"username": username, "password": password, "password-again": password_again}
-            }
-            console.log("/"+type)
-            $.ajax({
-                type: "POST",
-                url: "/"+type,
-                data: data,
-                success: function(data){
-                    console.log(data)
-                    window.location=data["url"];
-                }
-            })
-        }
-    </script>
 </body>
 </html>

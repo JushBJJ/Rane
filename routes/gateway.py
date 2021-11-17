@@ -1,5 +1,6 @@
-from utils import utils, rss
+from create_app import app
 from flask import request
+from utils import utils
 
 
 def gateway() -> bool:
@@ -15,7 +16,6 @@ def gateway() -> bool:
     }
 
     is_blacklisted = utils.call_db(
-        function=rss.rss_socket.emit,
         event="retrieve table",
         data=data,
         return_type=list

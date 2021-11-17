@@ -1,19 +1,21 @@
-from flask import request, session, redirect, url_for
+from flask import request, session, jsonify
 from utils import utils, user_utils, chat_utils
+
 import hashlib
+import bcrypt
 
 
 def login():
     """Login user."""
-    username = request.form["login-username"]
-    password = hashlib.sha256(request.form["login-password"].encode()).hexdigest()
+    username = request.form["username"]
+    password = hashlib.sha256(request.form["password"].encode()).hexdigest()
 
     data = {
         "filename": "accounts",
         "folder": "server",
         "table": "accounts",
         "select": "username, password",
-        "where": f"username=\"{username}\" and password=\"{password}\""
+        "where": "username = '{}'".format(username)
     }
 
     # Check if user exists.
@@ -24,12 +26,13 @@ def login():
     )
 
     if ret:
-        session["username"] = username
+        # Check if password is correct.
+        if bcrypt.checkpw(password.encode(), ret[0][1].encode()):
+            session["username"] = username
 
-        user_utils.online(1, 0)
-        chat_utils.autocolor("0")
-
-        return redirect(url_for("room", room_id=0))
+            user_utils.online(1, 0)
+            chat_utils.autocolor("0")
+            return jsonify({"url": "/room/0"})
 
     session["login_error"] = "Invalid Username or Password"
-    return redirect("/")
+    return jsonify({"url": "/"})

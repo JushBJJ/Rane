@@ -1,6 +1,8 @@
 from utils import rss
 from utils import utils
 
+import base64
+
 import os
 
 # Rooms Dir
@@ -18,8 +20,8 @@ def list_rooms() -> list:
     return files
 
 
-def get_room_messages(room_id: str) -> dict:
-    """Get every message from a room."""
+def get_room_messages(room_id: str) -> tuple:
+    """Get every message and media from a room."""
     ret = utils.call_db(
         event="retrieve messages",
         return_type=dict,
@@ -86,5 +88,28 @@ def get_rooms() -> list:
             "where": ""
         }
     )
+
+    return ret
+
+
+def get_user_rooms(username: str) -> list:
+    """Get a list of rooms register in the rooms database."""
+    ret = utils.call_db(
+        event="retrieve table",
+        return_type=list,
+        data={
+            "filename": "accounts",
+            "folder": "server",
+            "table": "accounts",
+            "select": "rooms",
+            "where": f"username=\"{username}\""
+        }
+    )[0][0]
+
+    # Decode base64
+    try:
+        base64.b64decode(ret)
+    except:
+        pass
 
     return ret

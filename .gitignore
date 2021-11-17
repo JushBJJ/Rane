@@ -2,6 +2,7 @@
 admin/
 data/rooms
 data/
+uploads/
 .vscode/
 config.py
 server.txt

@@ -1,14 +1,24 @@
 import sqlite3
-import os
 import shutil
+import os
 
-path = "../data/"
+path = "./data/"
+logs = "./logs/"
+uploads = "./static/uploads"
+
+remove_folders = [path, logs, uploads]
+
+for folder in remove_folders:
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
 
 # Create data folder and subdirectories
 os.mkdir(path)
 os.mkdir(path+"/keys/")
 os.mkdir(path+"/rooms/")
 os.mkdir(path+"/server/")
+os.mkdir(logs)
+os.mkdir(uploads)
 
 # Create Databases
 databases = {
@@ -29,7 +39,8 @@ databases = {
         	"message_id"	INTEGER,
         	"author_id"	INTEGER,
         	"author_ip"	TEXT,
-        	"message"	TEXT,
+        	"message"	TEXT NOT NULL,
+            "media" TEXT NOT NULL,
         	"show"	INTEGER,
         	PRIMARY KEY("message_id" AUTOINCREMENT)
         );''', '''

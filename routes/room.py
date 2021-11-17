@@ -3,6 +3,7 @@ from utils import room_utils, user_utils
 from typing import Any
 
 import routes.gateway as routes
+import create_app
 
 
 def room(room_id: str) -> Any:
@@ -23,12 +24,15 @@ def room(room_id: str) -> Any:
 
     # Set jinja values.
     room_name = room_utils.get_room_name(room_id)
+
+    # TODO
     is_admin = room_role == "Room Owner" or room_role == "Room Admin"
     user_id = user_utils.get_account_info(session["username"])[4]
 
     return render_template("chat.html",
                            room_id=str(room_id),
                            room_name=room_name,
+                           user_id=user_id,
                            username=session["username"],
-                           room_admin=is_admin,
-                           user_id=user_id)
+                           server_ip=create_app.app.config["HOST"]
+                           )

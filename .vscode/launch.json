@@ -5,18 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python: Flask",
             "type": "python",
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "server.py",
-                "HOST": "192.168.1.10",
-                "PORT": "5000"
+                "FLASK_APP": "server",
             },
             "args": [
                 "run",
-                "--no-debugger"
+                "--no-debugger",
+                "--host",
+                "192.168.1.15"
             ],
             "jinja": true
         }

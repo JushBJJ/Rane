@@ -1,153 +1,378 @@
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="overflow-hidden">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>You're garbage chat.</title>
 
-    <!--<link rel="stylesheet" href={{ url_for('static', filename='styles.css') }}>
-    <link rel="stylesheet" href={{ url_for('static', filename='chatroom.css') }}>
-    <link rel="icon" href="{{ url_for('static', filename='favicon.jpg') }}">-->
-
-    <!--IGNORE: For live preview-->
-    <link rel="stylesheet" href="../static/styles.css">
-    <link rel="stylesheet" href="../static/chatroom.css">
+    <link rel="stylesheet" href="https://unpkg.com/bulmaswatch/cyborg/bulmaswatch.min.css">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/theme.css">
     <link rel="stylesheet" href="../static/roles.css">
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.min.js"></script>
     <script src="https://kit.fontawesome.com/b44c4e81bc.js" crossorigin="anonymous"></script>
+
+    <title>Rane | Chat</title>
 </head>
-<body onload="ping(); ping_important(); ping_very_important();">
-    <!--Desktop View-->
-    <div id="side-panel">
-        <span id="username">{{username}}</span>
-        <div id="room_name"><span id="room_span_name">{{room_name}}</span>
-            {% if room_admin %}
-                <i class="fas fa-cog fa-xs"></i>
-            {% endif %}
+
+<body class="scroll" onload="ping(); ping_important(); ping_very_important();">
+    <div class="columns gap-x-10 m-2.5">
+        <!--Disconnected Page, should be on top of everything on the screen, will have class "hidden"-->
+        <div id="disconnected" class="column is-full-mobile is-full-tablet is-full-desktop hidden">
+            <div class="notification is-danger">
+                <h1 class="title is-4">Disconnected</h1>
+                <p>You have been disconnected from the server. This message will disappear when you've been reconnected.
+                </p>
+            </div>
         </div>
-        <div id="chatrooms">Loading...</div>
-        <div id="side-bottom">
-            <p>Users Online: <span id="current-online">Loading...</span>
-            <b><span class="sidebar-add">+
-                <!-- Add room -->
-                <div id="add_room" class="box">
-                    <input id="room-name" class="rl-box" placeholder="Room Name" type="text">
-                    <br>
-                    <input id="room-desc"class="rl-box" placeholder="Room Description" type="text">
-                    <br>
-                    <select id="room-public" class="rl-box">
-                        <option value="Public">Public</option>
-                        <option value="Private">Private</option>
-                    </select>
-                    <br>
-                    <button id="room-create" class="submit rl-box">Create Room</button>
-                    <button id="room-close" class="submit rl-box">Cancel</button>
+        <!--Sidebar-->
+        <div class="column is-one-quarter h-full flex flex-col">
+            <div class="column border-b border-gray-600">
+                <h3 id="room_name" class="title is-3 has-text-centered">{{room_name}}</h3>
+                <a class="block" onclick="toggleSettings()"><i class="fa fa-cog fa-2x float-right pt-1"></i></a>
+                <p class="is-6">Username: {{username}}</p>
+                <p class="is-6">Users Online: <span id="current-online">Loading...</span></p>
+
+                <!--Create, join and leave buttons-->
+                <a class="button is-primary is-outlined is-fullwidth" onclick="createRoom()">Create Room</a>
+                <a class="button is-success is-outlined is-fullwidth" onclick="joinRoom()">Join Room</a>
+                <a class="button is-danger is-outlined is-fullwidth" onclick="leaveRoom()">Leave Room</a>
+            </div>
+            <div id="chatrooms" class="column rooms is-full overflow-y-auto">
+                Loading...
+            </div>
+        </div>
+
+        <!--Chat-->
+        <div id="chat" class="column columns flex flex-col">
+            <!--TODO UPDATE HTML IN PYTHON-->
+            <div id="messages" class="column is-full vfull-90 overflow-y-auto">
+                <!--
+                <p class="tag is-black mt-2.5">June 8th</p>
+                <div class="border border-gray-900 rounded-md p-2.5 pr-2.5 pt-0.5 pb-0.5 w-max">Jush (Member): Yo</div>
+                <p class="tag is-black mt-2.5">June 8th</p>
+                <div class="border border-gray-900 rounded-md p-2.5 pr-2.5 pt-0.5 pb-0.5 w-max">Jush (Member): Test</div>
+                -->
+            </div>
+            <div class="columm columns">
+                <div class="column">
+                    <textarea id="send" class="input has-background-black has-text-white resize-none"
+                        placeholder="Message"></textarea>
+                    <input id="file" type="file" class="hidden">
                 </div>
-            </span></b>
-            </p>
+                <div class="column is-narrow">
+                    <a onclick="uploadFile()" class="block">
+                        <div class="rounded has-background-black p-2 px-10">
+                            Upload
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <form class="hidden" id="content" enctype="multipart/form-data"></form>
+            <!--
+                ┌───────────────────────────────────────────┐
+                │ Filename                                  │
+                │                                           │
+                │         ┌────────────┐  ┌──────────────┐  │
+                │         │ Cancel     │  │   Upload     │  │
+                │         ├────────────┤  ├──────────────┤  │
+                └─────────┴────────────┴──┴──────────────┴──┘
+            -->
+
+            <!--Absolute position-->
+            <div id="upload_box" class="absolute-center hidden">
+                <div class="card rounded-xl has-background-black p-2.5">
+                    <div class="media-content">
+                        <p class="title is-4 has-text-centered">Filename: <span id="filename"></span></p>
+                    </div>
+                    <!--Buttons-->
+                    <div class="columns">
+                        <div class="column is-narrow">
+                            <a onclick="cancelUpload();" class="block">
+                                <div class="rounded has-background-black p-2 px-10">
+                                    Cancel
+                                </div>
+                            </a>
+                        </div>
+                        <div class="column is-narrow">
+                            <a onclick="sendMessage(true); clearFile();" class="block">
+                                <div class="rounded has-background-black p-2 px-10">
+                                    Upload
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-    <div id="chat">
-        <div id="messages">Loading...</div>
-        <textarea id="send" placeholder="Message"></textarea>
-    </div>
 
-    <!--Loading Screen-->
-    <div id="loading-screen" class="load">Loading...</div>
+        <!--Settings-->
+        <div id="settings" class="columns is-hidden absolute w-full h-full bg-black left-3 top-3">
+            <a onclick="toggleSettings()" class="block"><i class="absolute right-5 top-5 fas fa-times fa-3x"></i></a>
+            <!--User Settings-->
+            <div class="column is-one-quarter">
+                <aside class="menu">
+                    <p class="menu-label">User Settings</p>
+                    <ul class="menu-list">
+                        <li onclick="toggleOption('account-settings')"><a>Account Settings</a></li>
+                    </ul>
+                    <p class="menu-label">Server Settings</p>
+                    <ul class="menu-list">
+                        <li><a>Change Server Name <span class="text-red-700">Coming Soon</span></a></li>
+                        <li><a>User Roles <span class="text-red-700">Coming Soon</span></a></li>
+                        <li><a onclick="toggleOption('members')">Members</a></li>
+                        <li><a>Privacy <span class="text-red-700">Coming Soon</span></a></li>
+                    </ul>
+                    <p class="menu-label">Other</p>
+                    <ul class="menu-list">
+                        <li><a onclick="toggleSettings()">Close</a></li>
+                    </ul>
+                </aside>
+            </div>
+            <!--Members-->
+            <div class="column w-full">
+                <div id="members" class="absolute top-2 field hidden w-full h-full ">
+                    <h4 class="title is-4">Members</h4>
 
-    <!--Mobile Menu View-->
-    <div id="mobile-menu-hamburger">&#9776</div>
-    <div id="mobile-menu"></div>
+                    <!--List of users
+                make sure to add their role
+                the role element should be <p class="tag is-black mt-2.5">rolename</p>
 
-    <!--Server Settings/Admin-->
-    {% if room_admin %}
-    <div id="settings">
-        <div id="blacklisted">
+                and their username should be <div class="border border-gray-900 rounded-md p-2.5 pr-2.5 pt-0.5 pb-0.5 w-max">Jush</div>
+                
+                and to get the role and username, use django.
+                -->
+                    {% for user in users %}
+                    <p class="tag is-black mt-2.5">{{user.role}}</p>
+                    <div class="border border-gray-900 rounded-md p-2.5 pr-2.5 pt-0.5 pb-0.5 w-max">
+                        {{user.username}}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div id="account-settings" class="absolute top-2 field hidden">
+                    <h4 class="title is-4">Account Settings</h4>
+                    <p class="subtitle is-4">Account Info</p>
+                    <p>Current Username: {{username}}</p>
+                    <br>
+                    <p class="subtitle is-4">Change Username</p>
+                    <span id="username-error" class="text-red-700"></span>
+                    <input id="new_username" class="input has-background-black has-text-white w-96" type="text">
+                    <div id="change_username" class="button">Submit</div>
+                    <br><br>
+                    <p class="subtitle is-4">Change Password</p>
+                    <span id="password-error" class="text-red-700"></span>
+                    <label class="label">Old Password</label>
+                    <input id="old_password" class="input has-background-black has-text-white w-96" type="password">
+                    <label class="label">New Password</label>
+                    <input id="new_password" class="input has-background-black has-text-white w-96" type="password">
+                    <br>
+                    <br>
+                    <div id="change_password" class="button">Submit</div>
+                </div>
+            </div>
+        </div>
+        <!--Create Room options.
+            - room name
+            - room password (can toggle with password checkbox)
+            - room description
+            - Public/Private (public by default)
             
-        </div>
-        <div id="whitelisted">
-            
-        </div>
+            The form must be placed at the middle of the page.
         
-        <div id="public">
+        -->
+        <div id="create-room-form" class="absolute hidden has-margin-bottom w-full h-full">
+            <div class="card rounded-xl has-background-black p-2.5">
+                <div class="media-content">
+                    <p class="title is-4 has-text-centered">Create Room</p>
+                </div>
+                <!--Room Error-->
+                <p id="room-error" class="text-red-700 has-text-centered"></p>
+                <div class="columns">
+                    <div class="column is-narrow">
+                        <label class="label">Room Name</label>
+                        <input id="room-name" class="input has-background-black has-text-white w-96" type="text">
+                    </div>
+                    <div class="column is-narrow">
+                        <label class="label">Room Password (Optional)</label>
+                        <input id="room-password" class="input has-background-black has-text-white w-96" type="text">
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column is-narrow">
+                        <label class="label">Room Description</label>
+                        <textarea id="room-description"
+                            class="textarea has-background-black has-text-white w-96"></textarea>
+                    </div>
+                    <div class="column is-narrow">
+                        <label class="label">Room Type</label>
+                        <div class="select is-fullwidth">
+                            <select id="room-type">
+                                <option value="Public">Public</option>
+                                <option value="Private">Private</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column is-narrow">
+                        <a onclick="toggleOption(`create-room-form`);" class="block">
+                            <div class="rounded has-background-black p-2 px-10">
+                                Cancel
+                            </div>
+                        </a>
+                    </div>
+                    <div class="column is-narrow">
+                        <a onclick="createRoom()" class="block">
+                            <div class="rounded has-background-black p-2 px-10">
+                                Create
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
 
         </div>
-        <div id="admins">
+        <script>
+            function sendMessage(media) {
+                message = $("#send")[0].value;
+                file = $("#file")[0].files[0];
+                $("#send")[0].value = "";
+                $("#file")[0].value = "";
 
-        </div>
-        <!--TOOD: Roles-->
-    </div>
-    {% endif %}
-    <!------------------->
-
-    <script type="text/javascript">
-        const socket=io();
-        let room_id="{{room_id}}";
-        let user_id="{{user_id}}";
-        let room_admin="{{room_admin}}"
-
-        let imp_3=true;
-        let imp_2=true;
-        let imp_1=true;
-        let hamburger_toggle=false
-
-        socket.connect("http://127.0.0.1:5000/");
-
-        $('#send').keyup(function(e){
-            if(e.keyCode == 13)
-            {
-                message=document.getElementById("send").value
-                socket.emit("send", message, room_id, user_id)
-                document.getElementById("send").value="";
-            }
-        });
-
-        $(".sidebar-add").on("click", function(event){
-            document.getElementById("add_room").style.visibility="visible";
-            document.getElementById("add_room").className="box box-open";
-        })
-
-        $("#room-create").on("click", function(event){
-            var roomTitle=document.getElementById("room-name").value;
-            var roomDesc=document.getElementById("room-desc").value;
-            var public=document.getElementById("room-public").value;
-
-            document.getElementById("room-desc").value=""
-            document.getElementById("room-name").value=""
-            document.getElementById("room-public").value="Public"
-            document.getElementById("add_room").className="box box-close";
-
-            socket.emit("create room", 
-                {
-                    "name": roomTitle, 
-                    "desc": roomDesc,
-                    "public": public,
-                    "owner": "{{username}}"
+                if (media == true) {
+                    cancelUpload(); // close the upload box
+                    document.getElementById("send").disabled = false;
                 }
-            )
-        })
 
-        $("#room-close").on("click", function(event){;
-            document.getElementById("add_room").className="box box-close";
-        })
+                form_data = new FormData($("#content")[0]);
+                form_data.append("message", message);
+                form_data.append("file", file);
+                form_data.append("room_id", room_id)
+                form_data.append("user_id", user_id)
 
-        $("#mobile-menu-hamburger").on("click", function(event){
-            element=document.getElementById("chatrooms");
-
-            if(hamburger_toggle==false){
-                element.className="chatrooms-open";
-                hamburger_toggle=true;
-            }else{
-                element.className="chatrooms-close";
-                hamburger_toggle=false;
+                $.ajax({
+                    type: "POST",
+                    url: "/send",
+                    data: form_data,
+                    processData: false,
+                    contentType: false,
+                    success: function () {
+                    }
+                })
             }
-        })
-    </script>
-    <script type="text/javascript" src={{url_for('static', filename='autoUpdate.js')}}>
 
-    </script>
+            const socket = io();
+
+            var room_id = '{{room_id}}';
+            var user_id = '{{user_id}}';
+            var room_admin = '{{room_admin}}';
+            var server_ip = '{{server_ip}}';
+
+            socket.connect("http://" + server_ip + ":5000/");
+
+            $("#send").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    sendMessage();
+                }
+            });
+
+            // When id "change_password" is pressed in ajax
+            $("#change_password").click(function () {
+                form_data = new FormData($("#content")[0]);
+                old_password = $("#old_password")[0].value;
+                new_password = $("#new_password")[0].value;
+
+                form_data.append("old_password", old_password);
+                form_data.append("new_password", new_password);
+
+                $.ajax({
+                    type: "POST",
+                    url: "/change_password",
+                    data: form_data,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        // The data has is like this: {"success": bool, "message": "whatever message"}
+                        // Put the message in the element with the id "password-error"
+                        $("#password-error")[0].innerHTML = data.message;
+                    }
+                })
+            });
+
+            // When id "change_username" is pressed in ajax
+            $("#change_username").click(function () {
+                form_data = new FormData($("#content")[0]);
+                new_username = $("#new_username")[0].value;
+
+                form_data.append("new_username", new_username);
+
+                $.ajax({
+                    type: "POST",
+                    url: "/change_username",
+                    data: form_data,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        $("#username-error")[0].innerHTML = data.message;
+
+                        if (data["success"]) {
+                            // Redirect to the same page
+                            window.location.href = window.location.href;
+                        }
+                    }
+                })
+            });
+
+            function clearFile() {
+                $("#file")[0].value = "";
+            }
+
+            function createRoom() {
+                if ($("#create-room-form").hasClass("hidden")) {
+                    toggleOption("create-room-form");
+                    return;
+                }
+                form_data = new FormData($("#content")[0]);
+                room_name = $("#room-name")[0].value;
+                room_password = $("#room-password")[0].value;
+                room_description = $("#room-description")[0].value;
+                room_type = $("#room-type")[0].value;
+
+                // Check if all fields are filled
+                if (room_name == "" || room_description == "") {
+                    $("#room-error")[0].innerHTML = "You must have a room name and description!";
+                    return;
+                }
+
+                toggleOption("create-room-form");
+
+                form_data.append("name", room_name);
+                form_data.append("description", room_description);
+                form_data.append("password", room_password);
+                form_data.append("public", room_type);
+
+                $.ajax({
+                    type: "POST",
+                    url: "/create_room",
+                    data: form_data,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        $("#room-error")[0].innerHTML = data["success"];
+
+                        if (data["success"]) {
+                            // Redirect to the same page
+                            window.location.href = window.location.href;
+                        }
+                    }
+                })
+            }
+        </script>
+        <script src="../static/interactions.js"></script>
+        <script type="text/javascript" src="../static/autoUpdate.js"></script>
 </body>
+
 </html>
