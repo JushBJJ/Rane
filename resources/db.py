@@ -1,4 +1,3 @@
-from client import resource_connection as rc
 from flask import current_app as app
 from typing import Any
 
@@ -7,36 +6,96 @@ import sqlite3
 import shutil
 
 
+def get_user_by_id(data: dict) -> Any:
+    user_id = data["id"]
+
+    data = {
+        "filename": "accounts",
+        "folder": "server",
+        "table": "accounts",
+        "select": "username",
+        "where": f"\"id\"=\"{user_id}\""
+    }
+
+    try:
+        return retrieve_table(data)[0][0]
+    except Exception as e:
+        return False
+
+
+def get_id_by_user(data: dict) -> Any:
+    username = data["username"]
+
+    data = {
+        "filename": "accounts",
+        "folder": "server",
+        "table": "accounts",
+        "select": "id",
+        "where": f"\"username\"=\"{username}\""
+    }
+
+    try:
+        return retrieve_table(data)[0][0]
+    except IndexError:
+        return False
+
+
+def join_room(data: dict) -> bool:
+    """Append a new user into a room."""
+    def join(cursor: sqlite3.Cursor) -> Any:
+        member_values = f"\"{user_id}\", \"{username}\", \"Member\""
+        return db_utils.db_insert(cursor, "Members", "\"ID\", \"Username\", \"Role\"", member_values)
+
+    room_id = str(data["room_id"])+".db"
+    user_id = data["user_id"]
+
+    username = get_user_by_id({"id": user_id})
+
+    if not username:
+        return False
+
+    app.logger.info(f"User {user_id} has joined room {room_id}")
+    return db_utils.db_edit(room_id, "rooms", join)
+
+
 def append_message(data: dict) -> bool:
     """Append message to room database, including the author's id and ip."""
     def append(cursor: sqlite3.Cursor) -> Any:
-        message_values = f"\"{author_id}\", \"{author_ip}\", \"{message}\", \"{show}\""
-        return db_utils.db_insert(cursor, "Messages", "author_id, author_ip, message, show", message_values)
+        message_values = f"\"{author_id}\", \"{author_ip}\", \"{message}\", \"{media}\",\"{show}\""
+        return db_utils.db_insert(cursor, "Messages", "author_id, author_ip, message, media, show", message_values)
 
     room_id = str(data["room_id"])+".db"
 
     author_id = data["author_id"]
     author_ip = data["author_ip"]
     message = data["message"]
+    media = data["media"]
     show = 1
 
     app.logger.info(f"New message from {author_id} ({author_ip}): {message}")
     return db_utils.db_edit(room_id, "rooms", append)
 
 
-def retrieve_messages(data: dict) -> list:
-    """Get all messages from a room."""
+def retrieve_messages(data: dict) -> tuple:
+    """Get all messages including their media child from a room."""
     def retrieve(cursor: sqlite3.Cursor) -> Any:
         return db_utils.db_retrieve(cursor,
                                     table="Messages",
-                                    select="message",
+                                    select="message, media",
                                     where="show=1")
 
     room_id = str(data["room_id"])+".db"
     received = db_utils.db_edit(room_id, "rooms", retrieve)
 
-    messages = [message[0] for message in received]
-    return messages
+    try:
+        """
+        [(a, 1), (b, 2), (c, 3)] -> (a, b, c), (1,2,3)
+        """
+        messages, medias = zip(*received)  # Split messages and medias
+    except ValueError:
+        return (), ()
+
+    return messages, medias
 
 
 def delete_message(data: dict) -> bool:
@@ -234,3 +293,34 @@ def is_blacklisted(data: dict) -> list[Any]:
 
     ip = data["ip"]
     return db_utils.db_edit(filename="blacklist", folder="server", function=check)
+
+
+def get_password(data: dict) -> list:
+    """Get password from user"""
+    def db_check_password(cursor: sqlite3.Cursor) -> Any:
+        return db_utils.db_retrieve(
+            cursor,
+            table="accounts",
+            select="password",
+            where=f"username=\"{username}\""
+        )
+
+    username = data["username"]
+    folder = "server"
+    return db_utils.db_edit(filename="accounts.db", folder=folder, function=db_check_password)
+
+# Similar to get_password, do the same but get the username instead.
+
+
+def get_username(data: dict) -> list:
+    """Get username from user"""
+    def db_check_username(cursor: sqlite3.Cursor) -> Any:
+        return db_utils.db_retrieve(
+            cursor,
+            table="accounts",
+            select="username",
+            where=f"username=\"{username}\""
+        )
+    username = data["username"]
+    folder = "server"
+    return db_utils.db_edit(filename="accounts.db", folder=folder, function=db_check_username)

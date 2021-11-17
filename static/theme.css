@@ -1,0 +1,85 @@
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgb(39 39 39);
+}
+
+.vfull-90{
+    height: 88vh;
+}
+.room:hover{
+    background-color: #111111 !important;
+}
+
+.rooms{
+    max-height: 30em;
+}
+
+/*
+Room form in HTML
+<form class="has-margin-bottom" id="create_room_form" onsubmit="createRoom()">
+    <div class="field">
+        <label class="label" for="room_name">Room Name</label>
+                                <input type="text" class="input" id="room_name" placeholder="Room Name">
+    </div>
+    <div class="field">
+        <label class="label" for="room_password">Room Password</label>
+        <input type="text" class="input" id="room_password" placeholder="Room Password">
+        <input type="checkbox" id="room_password_checkbox" onclick="togglePassword()">
+    </div>
+    <div class="field">
+        <label class="label" for="room_description">Room Description</label>
+        <textarea class="textarea" id="room_description" placeholder="Room Description"></textarea>
+    </div>
+    <div class="field">
+        <label class="label" for="room_public">Public/Private</label>
+        <input type="checkbox" id="room_public" onclick="togglePublic()">
+    </div>
+    <div class="field">
+        <button type="submit" class="button is-primary is-outlined is-fullwidth">Create Room</button>
+    </div>
+</form>
+
+Move the form into the center of the page.
+Make the form wide and have a border.
+Make the form input boxes be transparent
+*/
+
+has-margin-bottom{
+    margin-bottom: 1em;
+}
+
+.room-form{
+    display: none;
+
+    position: absolute !important;
+    border: 1px solid #000000 !important;
+    background-color: #111111 !important;
+    
+    /*Center the form in the page, the position is absolute*/
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    
+    /* Rounded borders */
+    border-radius: 5px !important;
+
+    /* Make the form a bit more wider, like 70% */
+    width: 30% !important;
+
+    /*Padding*/
+    padding: 10px !important;
+}
+
+.absolute-center{
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+}

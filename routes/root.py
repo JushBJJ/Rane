@@ -14,12 +14,13 @@ def root() -> Any:
         app.logger.info(f"{request.remote_addr} banned user tried to connect to server.")
         return render_template("banned.html")
 
-    session["anything"] = ""
-    session["login_error"] = ""
-    session["register_error"] = ""
-    session["username"] = ""
-    session["chat"] = ""
-    session["room_id"] = 0
+    if "anything" not in session.keys():
+        session["anything"] = ""
+        session["login_error"] = ""
+        session["register_error"] = ""
+        session["username"] = ""
+        session["chat"] = ""
+        session["room_id"] = 0
 
     return render_template("login.html",
                            login_error=session["login_error"],

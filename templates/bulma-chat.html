@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" class="overflow-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://unpkg.com/bulmaswatch/cyborg/bulmaswatch.min.css">
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/theme.css">
+    <link rel="stylesheet" href="../static/roles.css">
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.min.js"></script>
+    <script src="https://kit.fontawesome.com/b44c4e81bc.js" crossorigin="anonymous"></script>
+    
+    <title>Document</title>
+</head>
+<body class="scroll">
+    <div class="columns gap-x-10 m-2.5">
+        <!--Sidebar-->
+        <div class="column is-one-quarter h-full flex flex-col">
+            <div class="column border-b border-gray-600">
+                <h3 class="title is-3 has-text-centered">{{room_name}}</h3>
+                <a class="block" onclick="toggleSettings()"><i class="fa fa-cog fa-2x float-right pt-1"></i></a>
+                <p class="is-6">Username: {{username}}</p>
+                <p class="is-6">Users Online: <span id="current-online">Loading...</span></p>
+            </div>
+            <div id="chatrooms" class="column rooms is-full overflow-y-auto">
+                Loading...
+                <!-- TODO UPDATE ROOM HTML IN PYTHON
+                <div class="h-auto pb-4">
+                    <a class="block">
+                        <div class="card rounded-xl has-background-black p-2.5 room">
+                            <div class="media-content">
+                                <p class="title is-4 has-text-centered">Genesis</p>
+                                <p class="subtitle is-5 has-text-centered"><i>The start of everything</i></p>
+                            </div>
+                        </div>
+                    </a>
+                </div>-->
+            </div>
+        </div>
+
+        <!--Chat-->
+        <div id="chat" class="column columns flex flex-col">
+            <!--TODO UPDATE HTML IN PYTHON-->
+            <div class="column is-full vfull-90">
+                <!--
+                <p class="tag is-black mt-2.5">June 8th</p>
+                <div class="border border-gray-900 rounded-md p-2.5 pr-2.5 pt-0.5 pb-0.5 w-max">Jush (Member): Yo</div>
+                <p class="tag is-black mt-2.5">June 8th</p>
+                <div class="border border-gray-900 rounded-md p-2.5 pr-2.5 pt-0.5 pb-0.5 w-max">Jush (Member): Test</div>
+                -->
+            </div>
+            <div class="columm columns">
+                <div class="column">
+                    <input id="message" name="message" class="input has-background-black has-text-white" placeholder="Message">
+                    <input id="file" name="file" type="file" class="hidden">
+                </div>
+                <div class="column is-narrow">
+                    <a onclick="uploadFile()" class="block">
+                        <div class="rounded has-background-black p-2 px-10">
+                            Upload
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <form class="hidden" id="content" enctype="multipart/form-data"></form>
+        </div>
+    </div>
+
+    <!--Settings-->
+    <div id="settings" class="columns is-hidden absolute w-full h-full bg-black left-3 top-3">
+        <a onclick="toggleSettings()" class="block"><i class="absolute right-5 top-5 fas fa-times fa-3x"></i></a>
+        <!--User Settings-->
+        <div class="column is-one-quarter">
+            <aside class="menu">
+                <p class="menu-label">User Settings</p>
+                <ul class="menu-list">
+                    <li onclick="toggleOption('account-settings')"><a>Account Settings</a></li>
+                </ul>
+                <p class="menu-label">Server Settings</p>
+                <ul class="menu-list">
+                    <li><a>Change Server Name <span class="text-red-700">Coming Soon</span></a></li>
+                    <li><a>User Roles <span class="text-red-700">Coming Soon</span></a></li>
+                    <li><a onclick="toggleOption('members')">Members</a></li>
+                    <li><a>Privacy <span class="text-red-700">Coming Soon</span></a></li>
+                </ul>
+                <p class="menu-label">Other</p>
+                <ul class="menu-list">
+                    <li><a onclick="toggleSettings()">Close</a></li>
+                </ul>
+            </aside>
+        </div>
+        <!--Members-->
+        <div class="column w-full">
+            <div id="members" class="absolute top-2 field hidden w-full h-full ">
+                <h4 class="title is-4">Members</h4>
+
+                <!--User-->
+                <p class="tag is-black mt-2.5">Admin</p>
+                <p class="tag is-black mt-2.5">Member</p>
+                <div class="border border-gray-900 rounded-md p-2.5 pr-2.5 pt-0.5 pb-0.5 w-max">Jush</div>
+                
+                <p class="tag is-black mt-2.5">Admin</p>
+                <p class="tag is-black mt-2.5">Member</p>
+                <div class="border border-gray-900 rounded-md p-2.5 pr-2.5 pt-0.5 pb-0.5 w-max">JushBJJ2</div>
+                
+                <p class="tag is-black mt-2.5">Admin</p>
+                <p class="tag is-black mt-2.5">Member</p>
+                <div class="border border-gray-900 rounded-md p-2.5 pr-2.5 pt-0.5 pb-0.5 w-max">wakawaka231</div>
+            </div>
+            <div id="account-settings" class="absolute top-2 field hidden">
+                <h4 class="title is-4">Account Settings</h4>
+                <p class="subtitle is-4">Account Info</p>
+                <p>Current Username: Jush</p>
+                <p>Current Password: ****</p>
+                <br>
+                <p class="subtitle is-4">Change Username</p>
+                <input class="input has-background-black has-text-white w-96" type="text">
+                <div class="button">Submit</div>
+                <br><br>
+                <p class="subtitle is-4">Change Password</p>
+                <label class="label">Old Password</label>
+                <input class="input has-background-black has-text-white w-96" type="text">
+                <label class="label">New Password</label>
+                <input class="input has-background-black has-text-white w-96" type="text">
+                <br>
+                <br>
+                <div class="button">Submit</div>
+            </div>
+        </div>
+    </div>
+    <script src="../static/interactions.js"></script>
+    <script type="text/javascript" src="../static/autoUpdate.js"></script>
+    <script>
+        $('#message').keyup(function(e){
+            const socket=io();
+            let room_id="{{room_id}}";
+            let user_id="{{user_id}}";
+            let room_admin="{{room_admin}}";
+
+            socket.connect("http://127.0.0.1:5000/");
+            
+            if(e.keyCode == 13)
+                {
+                    message=$("#message")[0].value;
+                    file=$("#file")[0].files[0];
+                    $("#message")[0].value="";
+
+                    form_data=new FormData($("#content")[0]);
+                    form_data.append("message", message);
+                    form_data.append("file", file);
+                    form_data.append("room_id", room_id)
+                    form_data.append("user_id", user_id)
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/test",
+                        data: form_data,
+                        processData: false,
+                        contentType: false
+                    })
+                }
+        });
+
+        /*
+        $("#room-create").on("click", function(event){
+            var roomTitle=document.getElementById("room-name").value;
+            var roomDesc=document.getElementById("room-desc").value;
+            var public=document.getElementById("room-public").value;
+
+            document.getElementById("room-desc").value=""
+            document.getElementById("room-name").value=""
+            document.getElementById("room-public").value="Public"
+            document.getElementById("add_room").className="box box-close";
+
+            socket.emit("create room", 
+                {
+                    "name": roomTitle, 
+                    "desc": roomDesc,
+                    "public": public,
+                    "owner": "{{username}}"
+                }
+            )
+        })*/
+    </script>
+</body>
+</html>

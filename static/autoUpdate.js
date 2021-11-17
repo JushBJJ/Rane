@@ -3,9 +3,15 @@ let deltas=[]
 
 function move_room(new_room_id, new_room_name) {
     window.history.pushState({}, "Title", "/room/" + new_room_id);
-    document.getElementById("room_span_name").innerHTML = new_room_name;
+    document.getElementById("room_name").innerHTML = new_room_name;
     document.getElementById("messages").innerHTML="Loading..."
     room_id = new_room_id;
+    
+    index = tasks.indexOf("get_messages")
+    if (index != -1) {
+        tasks.splice(index, 1);
+    }
+    
     new_task("recolor", room_id)
     ping_very_important()
 }
@@ -15,7 +21,20 @@ function sleep(ms) {
 }
 
 function check_disconnected() {
-    socket.emit("check disconnected")
+    if (socket.connected) {
+        if (!document.getElementById("disconnected").classList.contains("hidden")) {
+            toggleOption("disconnected");
+            return false;
+        }
+        return true;
+    }
+    else {
+        // check if #disconnected has hidden class
+        if (document.getElementById("disconnected").classList.contains("hidden")) {
+            toggleOption("disconnected");
+            return false;
+        }
+    }
 }
 
 function autoscroll() {
@@ -25,7 +44,6 @@ function autoscroll() {
 
 function new_task(emit, params) {
     if (!tasks.includes(emit)) {
-        console.log("PING: ", emit)
         tasks.push(emit)
         socket.emit(emit, {"params": params, "pong": emit})
     }
@@ -52,7 +70,6 @@ socket.onAny((event, args) => {
     if (tasks.includes(event)) {
         var index=tasks.indexOf(event)
         tasks.splice(index, 1)
-        console.log("RECIEVED PONG: ", event)
     }
 })
 
@@ -73,7 +90,7 @@ socket.on("recieve_messages", function (data) {
 
 socket.on("recieve_local_message", function (data) {
     var e = document.createElement("local");
-    e.innerHTML=data["message"]
+    e.innerHTML = data["message"]
     document.getElementById("messages").appendChild(e)
 })
 
@@ -110,5 +127,5 @@ socket.on("force disconnect", function (data) {
 })
 
 setInterval(check_disconnected, 5000)
-setInterval(ping, 120000)
-setInterval(ping_important, 10000)
+setInterval(ping, 1000)
+setInterval(ping_important, 5000)

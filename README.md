@@ -4,6 +4,8 @@
 
 Rane is a chat client aimed to solve the issue of _______ _________ chat client websites. Therefore, this web application is to be ______ _______.
 
+## It doesn't work!
+It works on my machine.
 ## How to setup
 
 ### Install Requirements
@@ -14,7 +16,7 @@ Rane is a chat client aimed to solve the issue of _______ _________ chat client 
 
     python create_database
 
-### Run Server [/]
+### Run Server (Main File)[/]
     python run.py
 
 The server will be hosted in your localhost ip. (eg. http://192.168.1.10:5000)
